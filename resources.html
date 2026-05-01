@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMY 2026 — AI Resources</title>
+<meta name="description" content="AI tools, talks, and links from the SMY Uluwatu 2026 retreat.">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap">
+<style>
+:root {
+  --bg: #fafaf7;
+  --bg-soft: #f5f4ee;
+  --fg: #1a1a1a;
+  --fg-soft: #5b5b56;
+  --fg-mute: #8a8a82;
+  --accent: #2d6063;
+  --accent-soft: rgba(45, 96, 99, 0.10);
+  --border: #e6e3da;
+  --border-strong: #cfcbbe;
+  --max-w: 720px;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, h4, p, ul, li { margin: 0; }
+ul { padding: 0; list-style: none; }
+
+body {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+main {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+header.hero { margin-bottom: 48px; }
+.eyebrow {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  margin-bottom: 14px;
+}
+h1 {
+  font-size: 2.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 14px;
+}
+.lede {
+  color: var(--fg-soft);
+  font-size: 1.1rem;
+  line-height: 1.55;
+}
+
+a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+
+/* Expandable talk cards */
+details.talk {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  margin: 0 0 16px;
+  overflow: hidden;
+  transition: background 0.12s, border-color 0.12s;
+}
+details.talk[open] {
+  background: var(--bg);
+  border-color: var(--border-strong);
+}
+details.talk summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 18px 22px;
+  user-select: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+details.talk summary::-webkit-details-marker { display: none; }
+details.talk summary::before {
+  content: "▸";
+  color: var(--accent);
+  font-size: 0.95em;
+  line-height: 1.5;
+  transition: transform 0.15s;
+  flex: 0 0 auto;
+  margin-top: 0.1em;
+}
+details.talk[open] summary::before {
+  transform: rotate(90deg);
+}
+details.talk summary:hover { background: var(--accent-soft); }
+details.talk summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.summary-text .title {
+  font-weight: 600;
+  font-size: 1.18rem;
+  line-height: 1.3;
+}
+.summary-text .by {
+  color: var(--fg-mute);
+  font-style: italic;
+  font-size: 0.92rem;
+}
+
+.talk-body {
+  padding: 0 22px 22px 56px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+
+.talk-body > h4 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 28px 0 10px;
+}
+.talk-body > h4:first-child { margin-top: 0; }
+
+ul.links { margin: 0; }
+ul.links li { margin: 0 0 6px; }
+ul.links li:last-child { margin-bottom: 0; }
+
+.resource { margin: 0 0 22px; }
+.resource:last-child { margin-bottom: 0; }
+.resource .name {
+  font-weight: 600;
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+.resource p {
+  color: var(--fg-soft);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+
+.llms {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.llms li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+details.talk[open] .llms li {
+  background: var(--bg-soft);
+}
+.llms .label { font-weight: 600; }
+.llms .vendor {
+  color: var(--fg-mute);
+  font-size: 0.88rem;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  margin-top: 64px;
+  padding-top: 24px;
+  color: var(--fg-mute);
+  font-size: 0.9rem;
+}
+footer p { margin: 0; }
+
+@media (max-width: 600px) {
+  main { padding: 48px 20px 80px; }
+  body { font-size: 17px; line-height: 1.62; }
+  h1 { font-size: 2rem; }
+  details.talk summary { padding: 16px 18px; }
+  .talk-body { padding: 16px 18px 20px 42px; }
+  .summary-text .title { font-size: 1.08rem; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">SMY · Uluwatu Retreat 2026</p>
+  <h1>AI Resources</h1>
+  <p class="lede">Tools, talks, and links from the AI sessions at the retreat. Bookmarkable; will keep growing as more comes in.</p>
+</header>
+
+<details class="talk">
+  <summary>
+    <span class="summary-text">
+      <span class="title">How to Distrust AI</span>
+      <span class="by">Jonathan Lee Marcus</span>
+    </span>
+  </summary>
+  <div class="talk-body">
+
+    <h4>Talk notes</h4>
+    <ul class="links">
+      <li><a href="./how-to-distrust-ai-notes.pdf" target="_blank" rel="noopener">How to Distrust AI — notes (PDF)</a></li>
+    </ul>
+
+    <h4>Tools mentioned</h4>
+    <div class="resource">
+      <p class="name">Wispr Flow — voice dictation for the desktop</p>
+      <p>Software Jonathan demoed in the workshop and uses daily for both short and long-form typing. The iPhone version is a bit cumbersome (Apple limits what developers can do there), so Jonathan reaches for it before long-form typing and falls back to Apple's built-in dictation for short, quick things.</p>
+      <ul class="links">
+        <li><a href="https://wisprflow.ai/r/JONATHAN3699" target="_blank" rel="noopener">wisprflow.ai →</a></li>
+      </ul>
+    </div>
+    <div class="resource">
+      <p class="name">Higgsfield — content / art generator</p>
+      <p>Mentioned by Lance Chiu during the workshop.</p>
+      <ul class="links">
+        <li><a href="https://higgsfield.ai/" target="_blank" rel="noopener">higgsfield.ai →</a></li>
+      </ul>
+    </div>
+
+    <h4>General-purpose chat assistants</h4>
+    <ul class="llms">
+      <li>
+        <span class="label">Claude</span>
+        <span class="vendor">Anthropic · <a href="https://claude.ai/" target="_blank" rel="noopener">claude.ai</a></span>
+      </li>
+      <li>
+        <span class="label">Gemini</span>
+        <span class="vendor">Google · <a href="https://gemini.google.com/" target="_blank" rel="noopener">gemini.google.com</a></span>
+      </li>
+      <li>
+        <span class="label">ChatGPT</span>
+        <span class="vendor">OpenAI · <a href="https://chatgpt.com/" target="_blank" rel="noopener">chatgpt.com</a></span>
+      </li>
+    </ul>
+
+  </div>
+</details>
+
+<details class="talk">
+  <summary>
+    <span class="summary-text">
+      <span class="title">Building with Claude Code</span>
+      <span class="by">Prem</span>
+    </span>
+  </summary>
+  <div class="talk-body">
+    <ul class="links">
+      <li><a href="./presentation.html">Slides</a></li>
+      <li><a href="./index.html">Written companion guide</a> — opinionated walkthrough, deeper than the talk</li>
+    </ul>
+  </div>
+</details>
+
+<footer>
+  <p>Last updated May 2026. Open an issue or PR on the <a href="https://github.com/puiwah/claude-code-quickstart" target="_blank" rel="noopener">GitHub repo</a> to add resources.</p>
+</footer>
+
+</main>
+</body>
+</html>
