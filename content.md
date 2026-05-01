@@ -22,7 +22,7 @@
 
 ---
 
-Hi, I'm Prem. I've been doing AI work for eight years and these days I run three projects almost entirely on Claude Code — a clinical trial forecaster, a roleplaying game called Aurea, and a meditation platform called Yantra. This guide is what I wish I'd had on day one.
+Hi, it's Prem. At the SMY Uluwatu 2026 retreat I gave a [presentation on using Claude Code to build apps](./presentation.html). This guide is the written companion to that talk.
 
 If you're using a full-service builder like Lovable or Bolt instead of Claude Code, much of this still applies — the prompting techniques are universal. Toggle the **"On Lovable instead?"** switch at the top of the page to hide the sections that won't help you.
 
@@ -34,6 +34,8 @@ If you're using a full-service builder like Lovable or Bolt instead of Claude Co
 
 ## Section 1 — Should you use Claude Code at all?
 <!-- tag: meta -->
+
+*Already decided on Claude Code? [Skip ahead to setup](#part-2).*
 
 There are two ways to build apps with AI right now. Pick the one that fits how you want to work.
 
@@ -104,7 +106,7 @@ For the rest of this guide, I'll assume you've picked Claude Code. If you went w
 
 # Part 2 — Foundations
 
-*If you've used a terminal before, skip to Part 3.*
+*If you've used a terminal before, [skip to Part 3](#part-3).*
 
 ## Section 2 — The terminal and folders
 <!-- tag: cc-only -->
