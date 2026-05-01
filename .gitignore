@@ -1,0 +1,20 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Node (defensive — this project has no dependencies, but in case someone adds them)
+node_modules/
+
+# Logs / scratch
+*.log
+.scratch/
+
+# Claude Code local session data
+.claude/settings.local.json

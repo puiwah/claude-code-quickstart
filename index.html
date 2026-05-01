@@ -1,0 +1,1213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prem's Claude Code Quickstart</title>
+<meta name="description" content="The opinionated path I'd take if I were starting today — by Prem.">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600&display=swap">
+<script>
+  (function () {
+    try {
+      var os = localStorage.getItem('os-preference');
+      if (!os) {
+        var ua = navigator.userAgent || '';
+        if (/Mac|iPhone|iPad|iPod/.test(ua)) os = 'macos';
+        else if (/Windows/.test(ua)) os = 'windows';
+        else if (/Linux|Android|CrOS/.test(ua)) os = 'linux';
+        else os = 'macos';
+      }
+      var lov = localStorage.getItem('lovable-mode') === 'on' ? 'on' : 'off';
+      var html = document.documentElement;
+      html.setAttribute('data-os', os);
+      html.setAttribute('data-lovable', lov);
+    } catch (e) {
+      document.documentElement.setAttribute('data-os', 'macos');
+      document.documentElement.setAttribute('data-lovable', 'off');
+    }
+  })();
+</script>
+<style>
+/* === 1. Reset === */
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, h4, p, ul, ol, li, blockquote, pre, table, figure { margin: 0; }
+button { font: inherit; color: inherit; }
+
+/* === 2. Tokens === */
+:root {
+  --bg: #fafaf7;
+  --bg-soft: #f5f4ee;
+  --fg: #1a1a1a;
+  --fg-soft: #5b5b56;
+  --fg-mute: #8a8a82;
+  --accent: #2d6063;
+  --accent-soft: rgba(45, 96, 99, 0.12);
+  --code-bg: #f0efea;
+  --border: #e6e3da;
+  --border-strong: #cfcbbe;
+  --max-w: 720px;
+  --topbar-h: 56px;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, "JetBrains Mono", "Fira Code", Consolas, monospace;
+  --radius: 8px;
+}
+
+/* === 3. Typography === */
+html { font-size: 16px; }
+body {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 700; line-height: 1.25; }
+h1.page-title { font-size: 2.5rem; margin: 0.4em 0 0.4em; letter-spacing: -0.01em; }
+.part > h1 {
+  font-size: 2.25rem;
+  margin: 2.4em 0 0.5em;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+.section h2 { font-size: 1.5rem; margin: 2em 0 0.4em; }
+h3 { font-size: 1.2rem; font-weight: 600; margin: 1.8em 0 0.4em; }
+p { margin: 0 0 1.05em; }
+a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+strong { font-weight: 700; }
+em { font-style: italic; }
+
+/* === 4. Layout === */
+main.content {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: calc(var(--topbar-h) + 24px) 24px 96px;
+  width: 100%;
+}
+@media (min-width: 1240px) {
+  main.content { margin-right: 280px; margin-left: auto; padding-right: 32px; }
+  aside.toc {
+    position: fixed;
+    right: 24px;
+    top: calc(var(--topbar-h) + 24px);
+    width: 230px;
+    max-height: calc(100vh - var(--topbar-h) - 48px);
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+  main.content { margin-left: max(24px, calc(50% - var(--max-w) / 2 - 130px)); }
+}
+@media (max-width: 1239px) {
+  aside.toc { display: none; }
+}
+
+/* === 5. Topbar === */
+header.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(250, 250, 247, 0.92);
+  border-bottom: 1px solid var(--border);
+  -webkit-backdrop-filter: saturate(160%) blur(8px);
+  backdrop-filter: saturate(160%) blur(8px);
+}
+.topbar-inner {
+  display: flex; align-items: center; gap: 14px;
+  height: var(--topbar-h);
+  padding: 0 24px;
+  max-width: 100%;
+}
+.brand {
+  font-weight: 600; font-size: 0.95rem; flex: 1;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--fg);
+}
+.os-segment {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg);
+}
+.os-segment button {
+  appearance: none;
+  background: transparent; border: 0; cursor: pointer;
+  padding: 0 12px;
+  font-size: 0.85rem; color: var(--fg-soft);
+  height: 36px; min-width: 44px;
+  border-right: 1px solid var(--border);
+}
+.os-segment button:last-child { border-right: 0; }
+.os-segment button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.os-select {
+  display: none; padding: 0 10px;
+  font: inherit; font-size: 0.85rem;
+  height: 44px; min-width: 96px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--bg); color: var(--fg);
+}
+.lovable-toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  cursor: pointer; user-select: none;
+  font-size: 0.85rem;
+  position: relative;
+  padding: 6px 4px;
+}
+.lovable-toggle .label { color: var(--fg-soft); }
+.lovable-toggle input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.lovable-toggle:focus-within .switch-track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch-track {
+  display: inline-block; width: 36px; height: 20px;
+  background: var(--border-strong); border-radius: 999px;
+  position: relative; transition: background 0.15s;
+  flex: 0 0 auto;
+}
+.switch-thumb {
+  display: block; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; position: absolute; top: 2px; left: 2px;
+  transition: left 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.18);
+}
+.lovable-toggle input:checked ~ .switch-track { background: var(--accent); }
+.lovable-toggle input:checked ~ .switch-track .switch-thumb { left: 18px; }
+.toc-toggle {
+  display: none;
+  appearance: none; background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 0 10px; font-size: 0.85rem;
+  height: 36px; min-width: 44px; cursor: pointer;
+  color: var(--fg-soft);
+}
+@media (max-width: 1239px) { .toc-toggle { display: inline-block; } }
+.lovable-banner {
+  font-size: 0.92rem; padding: 10px 24px;
+  background: var(--accent-soft); color: var(--fg);
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 12px; align-items: center;
+}
+.lovable-banner[hidden] { display: none; }
+.banner-dismiss {
+  margin-left: auto; appearance: none; background: transparent; border: 0;
+  cursor: pointer; padding: 4px 8px; min-width: 44px; min-height: 36px;
+  font-size: 1.4rem; line-height: 1; color: var(--fg-soft);
+}
+
+@media (max-width: 720px) {
+  .os-segment { display: none; }
+  .os-select { display: inline-block; }
+  .topbar-inner { gap: 8px; padding: 0 16px; }
+  .brand { font-size: 0.82rem; }
+  .lovable-toggle .label { display: none; }
+  .lovable-toggle::before {
+    content: "Lovable";
+    color: var(--fg-soft);
+    font-size: 0.82rem;
+  }
+}
+
+/* === 6. Section markers + collapsed cards === */
+.section { padding-top: 0.25em; }
+.section-marker {
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--accent);
+  margin: -0.4em 0 1.2em;
+}
+.collapsed-card {
+  display: none;
+  width: 100%; text-align: left;
+  appearance: none;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  color: var(--fg-soft);
+  padding: 16px 18px; margin: 1.4em 0 0;
+  font: inherit; font-size: 0.96rem;
+  cursor: pointer; min-height: 44px;
+  font-style: italic;
+  transition: border-color 0.12s, background 0.12s;
+}
+.collapsed-card:hover { border-color: var(--accent); background: var(--bg); color: var(--fg); }
+.collapsed-card .cc-marker { color: var(--accent); font-style: normal; }
+
+html[data-lovable="on"] .section[data-section-tag="cc-only"] > .collapsed-card { display: block; }
+html[data-lovable="on"] .section[data-section-tag="cc-only"] > .section-body { display: none; }
+html[data-lovable="on"] .section[data-section-tag="cc-only"][data-expanded="1"] > .collapsed-card { display: none; }
+html[data-lovable="on"] .section[data-section-tag="cc-only"][data-expanded="1"] > .section-body { display: block; }
+html[data-lovable="on"] .toc-tag-cc-only a { color: var(--fg-mute); }
+
+/* === 7. Code + copy button === */
+pre {
+  background: var(--code-bg);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin: 1.2em 0;
+  overflow-x: auto;
+  position: relative;
+  line-height: 1.55;
+}
+pre code {
+  font-family: var(--mono);
+  font-size: 15px;
+  white-space: pre;
+  display: block;
+  color: var(--fg);
+  background: transparent;
+  padding: 0;
+}
+:not(pre) > code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--code-bg);
+  padding: 0.1em 0.36em;
+  border-radius: 4px;
+}
+.copy-btn {
+  position: absolute; top: 8px; right: 8px;
+  appearance: none;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--fg-soft);
+  font-size: 0.78rem; font-weight: 500;
+  padding: 4px 10px; border-radius: 6px;
+  cursor: pointer; min-height: 32px; min-width: 60px;
+  opacity: 0.45; transition: opacity 0.12s, color 0.12s, border-color 0.12s;
+}
+pre:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+@media (hover: none), (max-width: 720px) { .copy-btn { opacity: 1; } }
+.copy-btn[data-copied="1"] { color: var(--accent); border-color: var(--accent); opacity: 1; }
+
+/* === 8. Tables, blockquotes, lists === */
+ul, ol {
+  margin: 0 0 1.05em;
+  padding-left: 1.5em;
+}
+ul { list-style: disc; }
+ol { list-style: decimal; }
+li { margin: 0 0 0.4em; }
+li::marker { color: var(--fg-mute); }
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0.2em 0 0.2em 1em;
+  margin: 1.2em 0;
+  color: var(--fg-soft);
+  font-style: italic;
+}
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 1.4em 0;
+  font-size: 0.95em;
+}
+thead th {
+  text-align: left;
+  border-bottom: 2px solid var(--border-strong);
+  padding: 8px 12px 8px 0;
+  font-weight: 600;
+}
+tbody td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px 10px 0;
+  vertical-align: top;
+}
+tbody td:last-child, thead th:last-child { padding-right: 0; }
+hr {
+  border: 0; border-top: 1px solid var(--border);
+  margin: 2.5em auto; max-width: 220px;
+}
+
+/* === 9. TOC sidebar === */
+aside.toc { font-family: var(--serif); font-size: 0.85rem; }
+.toc-list { padding: 0 0 0 4px; margin: 0; list-style: none; }
+.toc-list li { margin: 0; }
+.toc-part {
+  margin: 1.1em 0 0.35em;
+  font-weight: 600;
+  color: var(--fg-mute);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.toc-section { margin: 0.1em 0; }
+.toc-section a {
+  display: block;
+  padding: 4px 10px 4px 12px;
+  color: var(--fg-soft);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  margin-left: -2px;
+  border-radius: 0 6px 6px 0;
+  line-height: 1.35;
+}
+.toc-section a:hover { color: var(--fg); background: var(--bg-soft); }
+.toc-section a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+
+/* === 10. Mobile TOC overlay === */
+.toc-overlay {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 200;
+  padding: 24px 24px 96px;
+  overflow-y: auto;
+  display: none;
+}
+.toc-overlay[aria-hidden="false"] { display: block; }
+.toc-overlay-close {
+  appearance: none; border: 0; background: transparent;
+  font-size: 1.6rem; cursor: pointer;
+  padding: 8px 12px; min-height: 44px; min-width: 44px;
+  position: sticky; top: 0; float: right;
+  color: var(--fg-soft);
+}
+.toc-overlay h2 {
+  font-size: 1.2rem; font-weight: 600;
+  margin: 4px 0 16px;
+}
+.toc-overlay .toc-list { padding-left: 0; }
+.toc-overlay .toc-section a { font-size: 1rem; padding: 10px 12px; min-height: 44px; }
+
+/* === 11. Intro === */
+section.intro { padding-top: 8px; }
+section.intro hr { margin: 2em auto; }
+
+/* OS blocks */
+.os-block { margin-top: 0.8em; }
+html[data-os="macos"] .os-block:not(.os-macos),
+html[data-os="linux"] .os-block:not(.os-linux),
+html[data-os="windows"] .os-block:not(.os-windows) { display: none; }
+
+/* === 12. Responsive === */
+@media (max-width: 600px) {
+  body { font-size: 17px; line-height: 1.62; }
+  h1.page-title { font-size: 2rem; }
+  .part > h1 { font-size: 1.7rem; }
+  .section h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.08rem; }
+  main.content { padding-left: 20px; padding-right: 20px; }
+  pre { padding: 14px 14px; }
+  pre code { font-size: 14px; }
+}
+
+/* === 13. Reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  html { scroll-behavior: auto; }
+}
+html { scroll-behavior: smooth; }
+
+/* Skip link */
+.skip-link {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--accent); color: #fff;
+  padding: 8px 12px; border-radius: 0 0 6px 0;
+  z-index: 300;
+}
+.skip-link:focus { left: 0; }
+</style>
+</head>
+<body>
+
+<a href="#intro" class="skip-link">Skip to content</a>
+
+<header class="topbar" role="banner">
+  <div class="topbar-inner">
+    <span class="brand">Prem's Claude Code Quickstart</span>
+    <button class="toc-toggle" type="button" aria-label="Jump to section">Jump to&hellip;</button>
+    <div class="os-segment" role="group" aria-label="Operating system">
+      <button type="button" data-os="macos" aria-pressed="true">macOS</button>
+      <button type="button" data-os="linux" aria-pressed="false">Linux</button>
+      <button type="button" data-os="windows" aria-pressed="false">Windows</button>
+    </div>
+    <select class="os-select" aria-label="Operating system">
+      <option value="macos">macOS</option>
+      <option value="linux">Linux</option>
+      <option value="windows">Windows</option>
+    </select>
+    <label class="lovable-toggle">
+      <span class="label">On Lovable instead?</span>
+      <input type="checkbox" role="switch" aria-checked="false" aria-label="On Lovable instead?">
+      <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+    </label>
+  </div>
+  <div class="lovable-banner" hidden>
+    <span>You're seeing the Lovable view. Claude-Code-only sections are hidden &mdash; click any to expand.</span>
+    <button class="banner-dismiss" type="button" aria-label="Dismiss banner">&times;</button>
+  </div>
+</header>
+
+<main class="content" id="content">
+<!-- BUILD:CONTENT-START -->
+<section class="intro" id="intro">
+<h1 class="page-title">Prem's Claude Code Quickstart</h1>
+<p><em>The opinionated path I'd take if I were starting today.</em></p>
+<p><em>Last updated: May 2026</em></p>
+<hr>
+<p>Hi, I'm Prem. I've been doing AI work for eight years and these days I run three projects almost entirely on Claude Code — a clinical trial forecaster, a roleplaying game called Aurea, and a meditation platform called Yantra. This guide is what I wish I'd had on day one.</p>
+<p>If you're using a full-service builder like Lovable or Bolt instead of Claude Code, much of this still applies — the prompting techniques are universal. Toggle the <strong>&quot;On Lovable instead?&quot;</strong> switch at the top of the page to hide the sections that won't help you.</p>
+<p><strong>Suggestions, corrections, additions welcome — open an issue or send a PR.</strong></p>
+<hr>
+</section>
+<section class="part" id="part-1" aria-labelledby="part-1-h">
+<h1 id="part-1-h">Part 1 — Deciding</h1>
+<section class="section" id="section-1" data-section-tag="meta" aria-labelledby="section-1-h">
+<div class="section-body">
+<h2 id="section-1-h">Section 1 — Should you use Claude Code at all?</h2>
+<p>There are two ways to build apps with AI right now. Pick the one that fits how you want to work.</p>
+<h3>The two paths</h3>
+<p><strong>Full-service builders</strong> — Lovable, Bolt, v0, Replit Agent. You describe what you want in a chat box on a website. They build it, host it, and handle the database, login, and deployment for you. You can use them with zero technical setup. The catch: you're working inside the limits of what a single chat session can express, on the platform they've designed.</p>
+<p><strong>Claude Code</strong> — a tool that runs on your own computer. You install it, point it at a folder, and it works inside that folder like a contractor would. There's a learning curve at the start — terminal, files, git — and you assemble your own pieces (where to host, which database, how to deploy). The upside: no ceiling. You can run multiple sessions, build anything, switch tools whenever you want, and own everything you create.</p>
+<h3>When each one wins</h3>
+<p>Use <strong>a full-service builder</strong> if any of these apply:</p>
+<ul>
+<li>You want a working, polished, deployed app this weekend, end of story.</li>
+<li>You don't want to learn what a terminal is, and you don't need to.</li>
+<li>What you're building is a fairly standard pattern — landing page, dashboard, marketplace, simple SaaS.</li>
+<li>You value the visual editor (click-and-modify) more than fine control over the code.</li>
+<li>You're testing an idea fast and might throw it away.</li>
+</ul>
+<p>Use <strong>Claude Code</strong> if any of these apply:</p>
+<ul>
+<li>You want to learn how this stuff actually works, not just get an output.</li>
+<li>You're building something unconventional — a game with custom mechanics, a research tool, a multi-agent system, anything that doesn't fit a standard template.</li>
+<li>You want multiple AI sessions running at once on the same project (one researching, one implementing) — this isn't possible in full-service builders today.</li>
+<li>You want a real native mobile app. Lovable produces web apps that run in a browser; for App Store distribution you'd need a separate wrapping tool. Claude Code can build native iOS, Android, or cross-platform apps (using frameworks like Flutter or React Native) — you'll need to pick the approach, but the path exists and you control it.</li>
+<li>You expect to keep building on this project for months or years and don't want to be locked into one platform's limits.</li>
+<li>You want full control: any database, any hosting, any framework, any model.</li>
+</ul>
+<h3>The honest cost-benefit</h3>
+<p>Full-service builders get you to a working app in a single afternoon. That's real. Many people read the previous list, see they fit the &quot;fast and standard&quot; path, and Lovable is genuinely the right answer for them.</p>
+<p>What full-service builders do not handle well, today:</p>
+<ul>
+<li>Anything that needs more than one AI agent collaborating on the same project.</li>
+<li><strong>Native mobile apps.</strong> Lovable, v0, and Bolt produce web applications. They run in a mobile browser and look fine on a phone, but they are not native iOS or Android apps. To get into the App Store you'd need to wrap the output with another tool (Capacitor, Median) — which often defeats the &quot;no setup, no configuration&quot; promise.</li>
+<li>Highly customized logic that's hard to express in chat (&quot;when X happens, do Y unless Z, and also write to this third-party API in this specific way&quot;).</li>
+<li>Long-running projects where you'll want to switch databases, hosts, or frameworks later.</li>
+<li>Building skills you can carry to other tools — what you learn in Lovable mostly stays in Lovable.</li>
+</ul>
+<p>What Claude Code asks of you in exchange for no ceiling:</p>
+<ul>
+<li>A terminal-and-folders mental model (this guide teaches it; about 15 minutes).</li>
+<li>A small amount of git (this guide teaches that too).</li>
+<li>Patience for the first hour, when you're slower than you'd be in Lovable.</li>
+<li>Ongoing taste decisions about hosting, database, deployment.</li>
+</ul>
+<h3>My take</h3>
+<p>I went straight to Claude Code when it came out, but I'm an experienced software engineer — that's not a useful data point for most readers. The more useful answer: I'd recommend Lovable to a friend who wants a tool to ship a specific, fairly conventional app this month and never think about it again. I'd recommend Claude Code to a friend who wants to <em>become someone who builds things</em>, who has multiple ideas, or who wants to build something that doesn't fit a template.</p>
+<p>For the rest of this guide, I'll assume you've picked Claude Code. If you went with Lovable, much of what follows still applies — prompts, the four-phase loop, specs, redteam — and sections that are Claude-Code-specific are clearly marked. Toggle the switch at the top to hide them.</p>
+<h3>Quick decision aid</h3>
+<table><thead><tr><th>Your situation</th><th>Probably the right tool</th></tr></thead><tbody>
+<tr><td>&quot;I want my idea live this weekend&quot;</td><td>Full-service builder</td></tr>
+<tr><td>&quot;I'm not technical and don't want to be&quot;</td><td>Full-service builder</td></tr>
+<tr><td>&quot;I'm building a standard pattern (dashboard / landing page / marketplace)&quot;</td><td>Either; full-service is faster</td></tr>
+<tr><td>&quot;I want a real iOS or Android app in the app stores&quot;</td><td>Claude Code (Flutter is often the easiest cross-platform path)</td></tr>
+<tr><td>&quot;I want to learn how this all works&quot;</td><td>Claude Code</td></tr>
+<tr><td>&quot;I'm building something weird&quot;</td><td>Claude Code</td></tr>
+<tr><td>&quot;I want multiple agents working on this&quot;</td><td>Claude Code</td></tr>
+<tr><td>&quot;I'm in this for the long haul&quot;</td><td>Claude Code</td></tr>
+</tbody></table>
+<hr>
+</div></section>
+</section>
+<section class="part" id="part-2" aria-labelledby="part-2-h">
+<h1 id="part-2-h">Part 2 — Foundations</h1>
+<p><em>If you've used a terminal before, skip to Part 3.</em></p>
+<section class="section" id="section-2" data-section-tag="cc-only" aria-labelledby="section-2-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 2">Section 2 — The terminal and folders. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<div class="section-body">
+<h2 id="section-2-h">Section 2 — The terminal and folders</h2>
+<p class="section-marker section-marker-cc-only">Claude Code only</p>
+<p>Two foundations before anything else, because most people coming to Claude Code are not coming from a developer background.</p>
+<p><strong>The terminal</strong> is a window on your computer where you type commands instead of clicking. Programmers use it because typing is faster than clicking once you know what you want. It looks intimidating but it's actually simpler than most apps — no menus, no settings buried in tabs. You type a command, hit enter, something happens.</p>
+<p>On a Mac, the app is called Terminal (open Spotlight with Cmd+Space and type &quot;terminal&quot;). On Windows, it's PowerShell or Command Prompt. On Linux, you already know.</p>
+<p>We'll use the terminal for two things in this guide: starting Claude Code, and watching what Claude does.</p>
+<p><strong>Folders</strong> are everything else. Every program on your computer lives in a folder. Folders contain files and other folders, all the way down. When you open Finder on a Mac or Explorer on Windows, you're looking at folders. The terminal sees the same folders, just with prettier-than-icons output.</p>
+<p>Why this matters for Claude Code: <strong>Claude doesn't know about your whole computer. It only knows about one folder at a time</strong> — the folder you started it in. Files in that folder, Claude can read and edit. Files outside it, Claude can't see. So the very first habit, before anything else: pick the folder for your project, walk into it, then start Claude.</p>
+<p>The command for &quot;walk into a folder&quot; is <code>cd</code> (change directory). Two commands you'll use constantly:</p>
+<pre><code class="language-bash">cd ~/Documents/my-app    # walk into this folder
+pwd                      # show me where I am right now</code></pre>
+<p>That's enough to get going. We'll do this together in section 4.</p>
+</div></section>
+<section class="section" id="section-3" data-section-tag="lovable-handles" aria-labelledby="section-3-h">
+<div class="section-body">
+<h2 id="section-3-h">Section 3 — Your project folder, and why git is your safety net</h2>
+<p class="section-marker section-marker-lovable-handles">Lovable handles this automatically</p>
+<p>Before you install Claude Code, decide where your projects will live and set up your safety net.</p>
+<p><strong>Pick a parent folder for all your projects.</strong> I use <code>~/Projects/</code>. Inside it, each project gets its own folder. So Aurea lives at <code>~/Projects/aurea/</code>, Yantra lives at <code>~/Projects/yantra/</code>. Pick a structure you like and stick with it.</p>
+<p>Make your first project folder now:</p>
+<pre><code class="language-bash">mkdir -p ~/Projects/my-first-app
+cd ~/Projects/my-first-app</code></pre>
+<p><strong>Now, git.</strong> Git is a tool that takes snapshots of your project as it grows. Every snapshot is a recovery point. If Claude does something you don't like — deletes a working file, refactors in a way you hate, &quot;improves&quot; something that wasn't broken — you can roll back to a snapshot in one command.</p>
+<p>This isn't optional. <strong>If you're using Claude Code, you're using git.</strong> Not &quot;you should.&quot; You must. Two reasons:</p>
+<ol>
+<li>Claude will eventually do something destructive. Without git, that work is gone. With git, it's <code>git reset --hard</code> and you're back where you were.</li>
+<li>When something works, you want to lock it in. Commit small, commit often. The blast radius of any bad session is bounded by your last commit — keep the radius small.</li>
+</ol>
+<p>Initialize git in your new folder:</p>
+<pre><code class="language-bash">git init
+git add -A
+git commit -m &quot;baseline before Claude&quot;</code></pre>
+<p>You'll do this once per project, before you ever start Claude there. Some prompts for later in the guide will remind you to commit before risky operations — take those reminders seriously.</p>
+<p>If you don't have git installed, on Mac it comes with Xcode Command Line Tools (<code>xcode-select --install</code>); on Windows, install Git for Windows from <code>git-scm.com</code>; on Linux, your package manager has it.</p>
+</div></section>
+<section class="section" id="section-4" data-section-tag="cc-only" aria-labelledby="section-4-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 4">Section 4 — Install Claude Code. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<div class="section-body">
+<h2 id="section-4-h">Section 4 — Install Claude Code</h2>
+<p class="section-marker section-marker-cc-only">Claude Code only</p>
+<p>Pick your platform with the toggle at the top of this section, then run the install command.</p>
+<div class="os-block os-macos">
+<p><strong>macOS</strong></p>
+<pre><code class="language-bash">curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+<p>Or, if you prefer Homebrew:</p>
+<pre><code class="language-bash">brew install --cask claude-code</code></pre>
+</div>
+<div class="os-block os-linux">
+<p><strong>Linux / WSL</strong></p>
+<pre><code class="language-bash">curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+</div>
+<div class="os-block os-windows">
+<p><strong>Windows (PowerShell)</strong></p>
+<pre><code class="language-powershell">irm https://claude.ai/install.ps1 | iex</code></pre>
+</div>
+<p>The native binary is the recommended path on every platform — it auto-updates, so you stay on the latest model and features without thinking about it. Avoid the older npm install if you have a choice.</p>
+<p><strong>Plan tier:</strong> you'll need a Claude subscription. Start on <strong>Pro at $20/month</strong> — it's plenty for learning and for any reasonable side project. When you find yourself hitting your token limit and waiting, that's the upgrade signal. The <strong>Max plan at $100/month</strong> pays for itself in saved hours once you're using Claude Code daily. Don't pre-upgrade; let the workflow tell you when.</p>
+<p>Once installed, walk into your project folder and start Claude:</p>
+<pre><code class="language-bash">cd ~/Projects/my-first-app
+claude</code></pre>
+<p>First time, you'll be prompted to log in. Follow the link, authorize, come back. Now run your very first prompt — just to confirm everything works:</p>
+<pre><code class="language-plain">&gt; what files are in this directory and what does this project do?</code></pre>
+<p>Claude will tell you the folder is empty (which it is). That round-trip — your prompt, Claude reading the directory, Claude responding — is the whole loop with one tool call. Everything from here is variations on that pattern.</p>
+<hr>
+</div></section>
+</section>
+<section class="part" id="part-3" aria-labelledby="part-3-h">
+<h1 id="part-3-h">Part 3 — Build Your First App</h1>
+<section class="section" id="section-5" data-section-tag="also-lovable" aria-labelledby="section-5-h">
+<div class="section-body">
+<h2 id="section-5-h">Section 5 — Pick what you're building</h2>
+<p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
+<p>The single biggest predictor of whether someone sticks with Claude Code is having a project they actually want to use. Don't pick a tutorial project. Pick something you'd open every day.</p>
+<p>If you're not sure where to start, here are five categories that work well for first projects. Each comes with a starter prompt you can adapt — the bracketed parts are yours to fill in. Each prompt asks Claude to propose a plan <em>before</em> writing code, so read the plan in chat and push back before you say go. (You'll meet plan mode proper in section 6.)</p>
+<p><strong>Personal tracker.</strong> Habits, journaling, mood, meditation streaks. Single user, simple data, immediate daily value.</p>
+<pre><code class="language-plain">&gt; I want to build a personal [tracker type] web app. Single page,
+  works offline, saves data in the browser. Plain HTML and JS,
+  no build step. Specifically: [what gets tracked, how often,
+  what you want to see at a glance]. Read what's here, then
+  propose a plan.</code></pre>
+<p><strong>Content site.</strong> Newsletter, blog, portfolio, teaching page. Mostly read-only, lots of typography, a clear voice.</p>
+<pre><code class="language-plain">&gt; I want to build a [content site type] for [audience]. The
+  voice should feel [adjective]. Pages I need: [home, about,
+  archive, individual posts]. Static site — generate HTML I
+  can host on Vercel or Netlify. Read what's here, then propose
+  a plan.</code></pre>
+<p><strong>Small game.</strong> Text adventure, card game, daily puzzle. Limited scope, fun feedback loop, naturally invites iteration.</p>
+<pre><code class="language-plain">&gt; I want to build a [game type] in the browser. Core mechanic:
+  [describe the loop in one sentence]. Win condition: [what
+  ends a round]. Plain HTML and JS. Read what's here, then
+  propose a plan.</code></pre>
+<p><strong>Productivity tool.</strong> Todo list, notes, time tracker, expense log. Solves a personal annoyance, low ambiguity, easy to verify it works.</p>
+<pre><code class="language-plain">&gt; I want to build a [tool type] for myself. The thing I want
+  it to do that other apps don't: [your specific itch]. Single
+  user, browser-only for now. Read what's here, then propose
+  a plan.</code></pre>
+<p><strong>Community app.</strong> Group ritual tracker, prayer wall, shared journal, study group dashboard. Multi-user, shared data, lower polish needs because the audience is small and known.</p>
+<pre><code class="language-plain">&gt; I want to build a small community app for [your group].
+  Core feature: [what people do together]. Roughly [N] users.
+  Web app, will need a real database for shared data. Read
+  what's here, then propose a plan.</code></pre>
+<p><strong>A note on adapting these.</strong> Don't agonize over the wording. Claude is good at asking clarifying questions when something's vague. The more important move is to type something specific to <em>you</em> into the brackets — &quot;habit tracker for daily meditation streaks&quot; lands harder than &quot;tracker app.&quot;</p>
+</div></section>
+<section class="section" id="section-6" data-section-tag="also-lovable" aria-labelledby="section-6-h">
+<div class="section-body">
+<h2 id="section-6-h">Section 6 — The four-phase loop: build the first version</h2>
+<p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
+<p>The canonical Claude Code workflow has four phases. Most beginners skip from prompt straight to implementation and wonder why the output is mediocre. The four phases are:</p>
+<ol>
+<li><strong>Explore</strong> — Claude reads the code, you ask questions, you both build understanding.</li>
+<li><strong>Plan</strong> — Claude proposes an approach. You read it, edit it, approve it.</li>
+<li><strong>Implement</strong> — Claude writes the code. You watch.</li>
+<li><strong>Verify</strong> — You run it, click around, push back on anything that isn't right.</li>
+</ol>
+<p>Repeat. The loop is the work.</p>
+<p>For your first project, run the loop end-to-end. Pick a starter prompt from section 5, fill in the brackets, paste it. Claude will explore the (empty) folder and come back with a plan.</p>
+<p><strong>A detail that compounds:</strong> before Claude starts writing code, press <strong>Shift+Tab</strong> to enter plan mode. In plan mode, Claude can read but not write. It produces a plan you can edit and approve. Press Shift+Tab again to switch back to execute mode and let Claude implement.</p>
+<p>For tiny tasks like fixing a typo, plan mode is overhead. For anything that touches multiple files, <em>always plan first</em>. The cost of a bad plan caught early is zero. The cost of a bad implementation is an hour of cleanup.</p>
+<p>Once you've approved the plan and Claude has written code, <strong>verify</strong> it. Don't just read the diff — ask Claude to walk you through what it did:</p>
+<pre><code class="language-plain">&gt; walk me through how the data flow works in what you just
+  built, as if you were onboarding a new engineer.</code></pre>
+<p>Forcing Claude to explain its own changes catches subtle problems you'd miss by just reading code.</p>
+<p><strong>When the output is wrong</strong> — and it will be — don't start a new conversation. Iterate. Point at the specific thing that's broken, describe what <em>correct</em> looks like, let Claude fix in place. You lose all the built-up context if you restart. Iteration is the workflow.</p>
+<pre><code class="language-plain">&gt; the [specific thing] is rendering [specific wrong behavior].
+  It should [specific correct behavior]. Fix and retest.</code></pre>
+<p>By the end of one loop you should have something running. Open the file in your browser, click around, make sure it works. Then commit:</p>
+<pre><code class="language-bash">git add -A
+git commit -m &quot;first working version&quot;</code></pre>
+<p>You now have a working app and a recovery point. The rest of this guide is layering capability on top of that.</p>
+</div></section>
+<section class="section" id="section-7" data-section-tag="also-lovable" aria-labelledby="section-7-h">
+<div class="section-body">
+<h2 id="section-7-h">Section 7 — Add a feature to whatever you built</h2>
+<p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
+<p>The prompts in this section work on any of the starter templates. They're written generically — &quot;your app&quot; rather than &quot;your habit tracker&quot; — because the technique transfers regardless of what you built.</p>
+<p>Pick one or two features to add. Don't try all four at once. The goal is practice running the loop on something more complex than the first version.</p>
+<p><strong>Login and registration.</strong> Adds the concept of users — your app stops being &quot;single-machine&quot; and starts being &quot;real.&quot; <em>(This one needs a backend — easier to tackle after section 9 if your app is still localStorage-only.)</em></p>
+<pre><code class="language-plain">&gt; I want to add login to my app. Email and password is fine
+  for now. After login, the app should show only the data
+  belonging to that user. Plan first: what files change, how
+  do we store users, what's the simplest secure approach?
+  Don't implement yet.</code></pre>
+<p><strong>Theming (light/dark mode).</strong> Teaches CSS variables and persistent preferences without database complexity.</p>
+<pre><code class="language-plain">&gt; I want to add a light/dark mode toggle. The button should
+  live in [where]. The choice should persist when I reload.
+  Default to whatever the OS prefers. Plan first.</code></pre>
+<p><strong>Search.</strong> Forces you to think about your data shape and how users want to find things.</p>
+<pre><code class="language-plain">&gt; I want to add search across [whatever your data is]. As I
+  type in the search box, results should filter live — no
+  separate &quot;search&quot; button. Match against [which fields].
+  Plan first.</code></pre>
+<p><strong>Notifications.</strong> Introduces async, scheduling, and the browser's permission model — a real bump in sophistication.</p>
+<pre><code class="language-plain">&gt; I want to add browser notifications when [trigger condition].
+  Ask for permission the first time. Let me turn them off in
+  settings. Plan first — and tell me what's tricky about
+  notifications I might not be thinking of.</code></pre>
+<p>For each feature, run the full loop: plan, approve, implement, verify, commit. The &quot;plan first&quot; line is the load-bearing word in each prompt. Drop it and Claude will barrel ahead. Keep it and you'll catch problems before they're code.</p>
+</div></section>
+<section class="section" id="section-8" data-section-tag="lovable-handles" aria-labelledby="section-8-h">
+<div class="section-body">
+<h2 id="section-8-h">Section 8 — Ship it to the world: deploy with Vercel</h2>
+<p class="section-marker section-marker-lovable-handles">Lovable handles this automatically</p>
+<p>This is the moment your app stops being a thing on your laptop and becomes a real URL you can text to a friend. For most people, this is the most emotionally significant step in the whole journey.</p>
+<p>We'll use <strong>Vercel</strong> because it's free for personal projects, has the most forgiving setup, and integrates with GitHub so every code push automatically deploys.</p>
+<p><strong>Step 1 — Get your project on GitHub.</strong> If you haven't already, create a public repository on github.com (the website), then in your project folder run the commands GitHub shows you. Claude Code can do this whole step for you:</p>
+<pre><code class="language-plain">&gt; I want to push this project to GitHub. My GitHub username
+  is [your-username]. Walk me through what to do, then do
+  the parts you can do without new credentials from me.</code></pre>
+<p><strong>Step 2 — Connect Vercel.</strong> Go to vercel.com, sign in with your GitHub account, click &quot;Add New Project,&quot; pick your repository, accept the defaults. Vercel auto-detects most setups. Click Deploy.</p>
+<p>That's it. Vercel gives you a URL like <code>my-first-app.vercel.app</code>. Open it. Share it.</p>
+<p><strong>The teaching moment:</strong> every time you push code to GitHub, Vercel automatically redeploys. So your git habit isn't just for safety anymore — it's also your shipping mechanism. This locks in the &quot;commit constantly&quot; rhythm because every commit is potentially a release.</p>
+<p>A useful prompt for after deployment:</p>
+<pre><code class="language-plain">&gt; fetch my deployed app at [URL]. Read the HTML and tell me
+  what you'd improve about the structure, content, or
+  accessibility. (For a visual review, paste a screenshot.)
+  Be specific.</code></pre>
+<p>You can use Claude as a first reviewer on your live site — surprisingly useful for catching the obvious things you stopped seeing because you stared at them too long.</p>
+</div></section>
+<section class="section" id="section-9" data-section-tag="lovable-handles" aria-labelledby="section-9-h">
+<div class="section-body">
+<h2 id="section-9-h">Section 9 — Make it real: from local storage to a real database</h2>
+<p class="section-marker section-marker-lovable-handles">Lovable handles this automatically</p>
+<p>Up to this point, your app probably stores data in the browser's local storage. That works for a personal tracker on one device, but it has real limits: data doesn't sync across phones and laptops, two users can't share anything, and clearing your browser cache nukes everything.</p>
+<p>Moving to a real database is the moment your app crosses from &quot;toy&quot; to &quot;real.&quot; We'll use <strong>Firebase Firestore</strong> for this guide — the free tier is generous (50K reads/day, 20K writes/day, 1GB storage), it doesn't auto-pause when your app is idle, and the document data model fits the kinds of apps you're likely to build.</p>
+<p><strong>A note on Supabase</strong>, the other obvious choice: also great, more powerful for SQL-relational data, but the free tier pauses projects after 7 days of inactivity. For a beginner who builds something one weekend and comes back three weeks later, that &quot;why is my app broken?&quot; experience is enough reason to start with Firestore.</p>
+<p><strong>Run the migration prompt:</strong></p>
+<pre><code class="language-plain">&gt; I want to migrate my app's data from browser localStorage
+  to Firebase Firestore. The data shape is: [briefly describe
+  what you store]. Plan first: what changes in the code, what
+  Firebase setup do I need to do in the browser, what stays
+  the same. Show me the plan before any code changes.</code></pre>
+<p>The plan should walk you through:</p>
+<ol>
+<li>Creating a Firebase project at console.firebase.google.com (free)</li>
+<li>Enabling Firestore in test mode for now</li>
+<li>Adding the Firebase SDK to your app</li>
+<li>Replacing localStorage reads/writes with Firestore equivalents</li>
+<li>(If you have login already) tying data to users with security rules</li>
+</ol>
+<p><strong>Commit before you start the migration.</strong> This is the kind of change where having a recovery point matters.</p>
+<p>After migration, verify by:</p>
+<ul>
+<li>Opening your app on a different device or browser, logging in, and seeing the same data</li>
+<li>Checking the Firestore console to confirm data is showing up</li>
+<li>Asking Claude: <code>&gt; read through my Firestore code and tell me where the security holes are</code></li>
+</ul>
+<p>Once it works, commit again. Push. Vercel redeploys. You now have a real app with real data.</p>
+<hr>
+</div></section>
+</section>
+<section class="part" id="part-4" aria-labelledby="part-4-h">
+<h1 id="part-4-h">Part 4 — Going Deeper</h1>
+<p><em>The techniques that make Claude Code dramatically better. Read these as you start to outgrow the basics.</em></p>
+<section class="section" id="section-10" data-section-tag="cc-only" aria-labelledby="section-10-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 10">Section 10 — CLAUDE.md: your project's memory. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<div class="section-body">
+<h2 id="section-10-h">Section 10 — CLAUDE.md: your project's memory</h2>
+<p class="section-marker section-marker-cc-only">Claude Code only</p>
+<p>The most leveraged file in your project is <code>CLAUDE.md</code>. It lives in your project root. Claude Code reads it at the start of every session — it's how you tell Claude what this project is and how to behave inside it.</p>
+<p>Without a CLAUDE.md, you re-explain your project every time. With a good one, Claude shows up already knowing your stack, your conventions, and your hard rules.</p>
+<p>Generate yours now:</p>
+<pre><code class="language-plain">&gt; create a CLAUDE.md for this project. Ask me 5 questions first
+  about my preferences and conventions, then draft the file.
+  Keep it under 30 lines for now.</code></pre>
+<p>Claude will ask things like <em>&quot;What's your preferred testing framework?&quot;</em> or <em>&quot;Are there directories I should never touch?&quot;</em> Answer honestly. The output should look something like:</p>
+<pre><code class="language-markdown"># Project: HabitTracker
+- Stack: vanilla HTML + JS + Firebase Firestore
+- Style: small functions, named exports, no frameworks
+- Always run the test suite before claiming a task is done
+- Never edit anything in /vendor or /generated
+- Database migrations require explicit human approval
+- Prefer composition over inheritance</code></pre>
+<p><strong>Keep it short.</strong> Aim for 30 lines to start, and cap at around 100 even after years of use. This is a contract, not a textbook. The discipline: when you find yourself explaining the same thing twice in different sessions, that's a CLAUDE.md entry.</p>
+<p>A great CLAUDE.md is the single most compounding investment in this whole guide. The difference between explaining yourself every session and never explaining yourself again.</p>
+</div></section>
+<section class="section" id="section-11" data-section-tag="cc-only" aria-labelledby="section-11-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 11">Section 11 — Plan mode: think before you build. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<div class="section-body">
+<h2 id="section-11-h">Section 11 — Plan mode: think before you build</h2>
+<p class="section-marker section-marker-cc-only">Claude Code only</p>
+<p>You met plan mode briefly in section 6. Now the full picture.</p>
+<p>Press <strong>Shift+Tab</strong> to toggle plan mode. In plan mode, Claude reads everything it needs but writes nothing. It produces a plan you can edit and approve. Press Shift+Tab again to flip back to execute mode and let Claude implement what you signed off on.</p>
+<p>The rule of thumb: if you could describe the change in one sentence, skip the plan. Otherwise, plan first.</p>
+<p>A good plan-mode prompt:</p>
+<pre><code class="language-plain">&gt; [Shift+Tab to enter plan mode]
+&gt; I want to [feature description]. What files would change,
+  what's the approach, what could go wrong, and what tests
+  should I write? Be specific about file paths.</code></pre>
+<p>What makes plan mode work isn't the mode itself — it's that you take the plan seriously. Read it. Push back on anything that smells off. Ask for alternatives. The plan is cheap to revise; the implementation is expensive to redo.</p>
+<p>A common failure mode: you scan the plan, type &quot;looks good,&quot; let Claude implement, and then realize halfway through that the approach was wrong. The plan deserves the same care as a code review. Two minutes spent on the plan saves an hour of cleanup.</p>
+</div></section>
+<section class="section" id="section-12" data-section-tag="cc-only" aria-labelledby="section-12-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 12">Section 12 — Tests: how Claude knows when it's done. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<div class="section-body">
+<h2 id="section-12-h">Section 12 — Tests: how Claude knows when it's done</h2>
+<p class="section-marker section-marker-cc-only">Claude Code only</p>
+<p>Quick definition for anyone new: a <strong>test</strong> is code whose only job is to check that your real code does what it should. You write a sentence like <em>&quot;after I add a habit called 'read,' the list should contain 'read'&quot;</em> — and the test fails loudly if that's not true.</p>
+<p>Why this matters for Claude Code specifically: Claude is great at writing code that <em>looks</em> right but doesn't actually work. Tests catch that. They're also how Claude knows when it's done — instead of you eyeballing every change, the test suite either passes or it doesn't.</p>
+<p><strong>The single most useful habit:</strong> ask Claude to write a test <em>before</em> it writes the feature.</p>
+<pre><code class="language-plain">&gt; before you implement [feature], write a test that checks
+  [specific expected behavior]. Run the test to confirm it
+  fails (because the feature doesn't exist yet). Then implement
+  the feature. Then run the test again to confirm it passes.</code></pre>
+<p>This is a slightly slower path than &quot;just implement it.&quot; It's also dramatically more reliable. You'll catch a category of bugs that's hard to catch any other way — the kind where the code looks reasonable and runs without error but produces the wrong answer.</p>
+<p>For your first projects, you don't need a sophisticated test framework. A few asserts in a separate file you can run from the terminal is enough. Claude can set this up in two minutes:</p>
+<pre><code class="language-plain">&gt; set up a minimal test runner for this project. I want to
+  write tests as plain JS files I can run from the terminal.
+  No framework if possible.</code></pre>
+</div></section>
+<section class="section" id="section-13" data-section-tag="also-lovable" aria-labelledby="section-13-h">
+<div class="section-body">
+<h2 id="section-13-h">Section 13 — Specs: writing down what &quot;done&quot; looks like</h2>
+<p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
+<p>A <strong>spec</strong> is a short markdown file describing what success looks like for a feature, before any code gets written. Same idea as a test, but at the requirements level.</p>
+<p>Specs do two things. First, Claude reads the spec and self-checks against it — which catches &quot;solved the wrong problem&quot; early. Second, when you come back to the project next week or next month, the spec tells you (and Claude) what was actually intended.</p>
+<p>A spec doesn't need to be long. Five bullets is often plenty:</p>
+<pre><code class="language-markdown"># Feature: Daily streak counter
+
+- Shows current streak (consecutive days with at least one
+  habit checked off) at the top of the page
+- Resets to 0 if a day is skipped
+- Counts today as part of the streak only if at least one
+  habit is checked off today
+- Shows a &quot;longest streak&quot; stat below the current streak
+- No notifications, no sounds, no animations — just the number</code></pre>
+<p>The pattern is <strong>spec first, tests second, code third</strong>. Yes, it's slower upfront. Yes, it's massively faster overall. The shortcut paths cost more than the chain.</p>
+<p>A useful prompt for any non-trivial feature:</p>
+<pre><code class="language-plain">&gt; I want to add [feature]. Before any code, ask me 5 clarifying
+  questions about scope, edge cases, and constraints. Then
+  draft a spec.md.</code></pre>
+<hr>
+</div></section>
+</section>
+<section class="part" id="part-5" aria-labelledby="part-5-h">
+<h1 id="part-5-h">Part 5 — The Serious-Projects Toolkit</h1>
+<p><em>The techniques that separate &quot;I tried it once&quot; from &quot;I ship with this.&quot; You'll know when you need them.</em></p>
+<section class="section" id="section-14" data-section-tag="also-lovable" aria-labelledby="section-14-h">
+<div class="section-body">
+<h2 id="section-14-h">Section 14 — Redteam: have Claude attack its own plan</h2>
+<p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
+<p>Borrowed from security: a <strong>redteam</strong> is the practice of attacking your own work to find holes, before someone else does. In Claude Code, the technique is to spawn parallel sub-agents with adversarial personas, each reading the same spec but with a different lens, each running in its own fresh context.</p>
+<p>The fresh-context part is the load-bearing trick. If you do the review in your own conversation, you'll rationalize toward the position you've already convinced yourself of. Sub-agents don't share your conversation history — they can't be primed by what you've been thinking. That's where the independent eyes come from.</p>
+<p><strong>The bare-bones redteam prompt:</strong></p>
+<pre><code class="language-plain">&gt; Do an adversarial review of [doc-or-spec-path].
+
+  Spawn 3 sub-agents in parallel. Each reads the same doc
+  but with a different lens. Run them in fresh contexts
+  (Task tool / sub-agents) — do NOT do the review yourself
+  in this conversation.
+
+    Persona 1 — Adversary: Find ways this fails. What breaks
+      under load, edge cases, misuse, scale? What's the worst
+      plausible outcome?
+
+    Persona 2 — Skeptic: Find unverified assumptions. What
+      does this claim that isn't proven? What's stated as
+      fact but is actually a guess? What &quot;obviously&quot; works
+      that hasn't been measured?
+
+    Persona 3 — Librarian: Find what this contradicts or
+      duplicates. Does it conflict with existing code, specs,
+      or earlier decisions? Is it reinventing something that
+      already exists?
+
+  Each sub-agent returns 3-5 concrete findings. Every finding
+  must have:
+    - A one-line title
+    - Why it matters (concrete scenario, not &quot;feels wrong&quot;)
+    - Severity (critical / major / minor)
+
+  Then aggregate the 9-15 findings into one report grouped
+  by severity. Do NOT deduplicate aggressively — overlapping
+  findings from different angles are signal that something
+  is genuinely load-bearing.</code></pre>
+<p><strong>Common pitfalls:</strong></p>
+<ul>
+<li>If you do the review in your own context, you'll rationalize toward your existing position. The fresh-context spawn is what gives you independent eyes.</li>
+<li>&quot;Vague vibes&quot; findings (&quot;feels off,&quot; &quot;could be cleaner&quot;) are the noise that drowns the signal. The per-finding scenario requirement is what filters them out.</li>
+<li>Resist the urge to add seven personae on day one. Three good ones beat seven mediocre ones, and three is enough to feel the technique work.</li>
+</ul>
+<p>Use redteam before you implement anything serious. Five minutes of redteam saves you days of &quot;oh, we never thought about that.&quot;</p>
+</div></section>
+<section class="section" id="section-15" data-section-tag="also-lovable" aria-labelledby="section-15-h">
+<div class="section-body">
+<h2 id="section-15-h">Section 15 — The full chain</h2>
+<p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
+<p>For any feature serious enough to ship, run the full chain:</p>
+<ol>
+<li><strong>Idea</strong> — rough concept, sentence or two.</li>
+<li><strong>Spec</strong> — write it down formally as <code>spec.md</code>. (Section 13.)</li>
+<li><strong>Redteam</strong> — three parallel personae attack the spec, find gaps, fold findings back in. (Section 14.)</li>
+<li><strong>Plan</strong> — implementation plan, in plan mode, against the updated spec. (Section 11.)</li>
+<li><strong>Tests</strong> — Claude writes tests against the spec <em>before</em> implementation. (Section 12.)</li>
+<li><strong>Implement</strong> — Claude writes the code. You watch.</li>
+<li><strong>Review</strong> — a separate Claude session reviews the diff. Works because that session has no ego in the implementation. (Section 16.)</li>
+</ol>
+<p>Heavy? Yes. But this is what serious software engineering looks like with AI in the loop, and beyond a certain project size you need this discipline. The shortcuts always cost more than the chain.</p>
+<p>Use the four-phase loop (section 6) for small things. Use the chain for things you actually want to ship.</p>
+</div></section>
+<section class="section" id="section-16" data-section-tag="cc-only" aria-labelledby="section-16-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 16">Section 16 — Running parallel sessions: research vs. implementation. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<div class="section-body">
+<h2 id="section-16-h">Section 16 — Running parallel sessions: research vs. implementation</h2>
+<p class="section-marker section-marker-cc-only">Claude Code only</p>
+<p>When I'm working seriously, my screen looks like this:</p>
+<pre><code class="language-plain">┌──────────────────────────┬──────────────────────────┐
+│  PROJECT A — ENGINEER    │  PROJECT A — RESEARCHER  │
+│  implementing features   │  investigating, planning │
+│  writing tests           │  reading docs, no code   │
+├──────────────────────────┼──────────────────────────┤
+│  PROJECT B — ENGINEER    │  PROJECT B — RESEARCHER  │
+│  implementing features   │  investigating, planning │
+│  writing tests           │  reading docs, no code   │
+└──────────────────────────┴──────────────────────────┘</code></pre>
+<p>Two projects in flight, two sessions per project. Four terminals, one me.</p>
+<p><strong>The Engineer–Researcher split per project.</strong> While the Engineer is implementing, the Researcher is two steps ahead — reading docs, drafting the next spec, redteaming the next feature. By the time the Engineer finishes, the next plan is ready to hand off.</p>
+<p><strong>Why two projects, not one.</strong> Claude sessions have dead time — long tool runs, tests running, you reading the diff. Switching to a different project fills that gap productively. Why not three? Because <em>I'm</em> the bottleneck — I can only hold so much state in my head. Two is the sweet spot for me. You'll find your own number.</p>
+<p><strong>Start small.</strong> Don't open four terminals on day one. Start with one project, two roles. Add the second project only when you notice yourself idle.</p>
+<p><strong>The git blast radius is real.</strong> With multiple sessions on the same codebase, two Claudes editing the same file at the same time is a disaster. Two rules:</p>
+<ul>
+<li>Use <strong>git worktrees</strong> so each session has its own checkout. (<code>git worktree add ../my-app-research</code> creates a parallel working directory at the same project, on its own branch.)</li>
+<li>Commit constantly. Every passing test, every working feature.</li>
+</ul>
+<p><strong>A real warning.</strong> You'll wait a lot, even with parallel sessions. Resist the temptation to fill every moment with another Claude task. Sometimes the right move is to step away and let one finish.</p>
+</div></section>
+<section class="section" id="section-17" data-section-tag="cc-only" aria-labelledby="section-17-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 17">Section 17 — Dispatch agents: hard limits keep them honest. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<div class="section-body">
+<h2 id="section-17-h">Section 17 — Dispatch agents: hard limits keep them honest</h2>
+<p class="section-marker section-marker-cc-only">Claude Code only</p>
+<p>Once you're comfortable spawning sub-agents (section 16), you'll hit the next problem: sub-agents drift. They loop on errors, retry the same broken approach with slight variations, decide a failing safety gate is &quot;the problem&quot; and disable it, and at the end of two hours of wall time return a confident summary that bears no relation to what actually happened.</p>
+<p>The fix is not better agents. The fix is <strong>hard limits + isolation</strong>, written into every dispatch prompt. The boilerplate below is mechanical, not stylistic — every line earned its place from a real incident.</p>
+<h3>Before you spawn</h3>
+<p>Write down on a scratch doc:</p>
+<ul>
+<li><strong>Worktree path</strong> — must NOT be your current working directory. Make a separate git worktree for the agent so its writes can't pollute your main checkout. (<code>git worktree add ../my-app-agent-1</code> is the one-liner.)</li>
+<li><strong>Files it's allowed to touch</strong> — three to five globs, no broader.</li>
+<li><strong>Success criterion</strong> — one line. &quot;Tests green and a commit on branch X.&quot;</li>
+<li><strong>Honest wall-time estimate.</strong></li>
+</ul>
+<p>If two sub-agents would share a worktree, stop and reassign one. If the task needs physical hardware — a phone, a hardware key, a human in the loop — an agent cannot do it. Surface and reassign.</p>
+<h3>The dispatch prompt</h3>
+<p>In the agent's prompt, paste this verbatim:</p>
+<pre><code class="language-plain">HARD LIMITS (do not violate):
+• Wall clock: 30 minutes maximum. Stop and write a status
+  report if you hit it, even mid-task.
+• Retries: ONE retry per pre-commit / lint / test failure.
+  If the same gate fails twice, stop and report what failed —
+  do not keep trying variations.
+• No bypass flags (--no-verify, --skip-tests, --force, etc.)
+  without explicit user approval first.
+• Stuck = 5 minutes on the same error with no progress. When
+  stuck, stop and report. Do not investigate the hook source
+  code to work around it.
+• Stay inside &lt;worktree-path&gt;. Never write files outside it.
+
+SUCCESS = &lt;one-line criterion&gt;. Before exiting, write a status
+file at &lt;worktree&gt;/.status.md with one of: done | blocked |
+stuck, followed by 2-3 sentences on what happened.</code></pre>
+<h3>After the agent returns</h3>
+<p>Every time, no exceptions:</p>
+<ul>
+<li><strong>Read <code>.status.md</code>.</strong> Trust the file, not the agent's chat summary.</li>
+<li>If &quot;done&quot;: review the actual git diff (not the agent's word for it), merge or open a PR, then delete the worktree.</li>
+<li>If &quot;blocked&quot; or &quot;stuck&quot;: read the report, pick up where it stopped. Do not respawn blind.</li>
+<li>Worktree gets deleted either way. Lingering worktrees accumulate and become a different kind of bug.</li>
+</ul>
+<h3>Why each line is there</h3>
+<ul>
+<li><strong>The 30-minute cap</strong> feels arbitrary until the first time an agent burns two hours retrying the same pre-commit hook with slight variations. Then it feels obvious.</li>
+<li><strong>&quot;Read <code>.status.md</code>, not the chat summary&quot;</strong> is the most-skipped line. Agents are optimistic narrators of their own work — the file is the receipt.</li>
+<li><strong>The &quot;no bypass flags&quot; line</strong> is what stops the failure mode where an agent hits a hook, decides the hook is the problem, and disables it. Hooks exist for reasons; if one needs changing, that's a human decision.</li>
+<li><strong>The worktree-isolation step</strong> prevents the silent corruption case where two parallel sub-agents write to the same directory and last-write-wins.</li>
+</ul>
+<p>This pattern is more discipline than technique. The first time it saves you — and it will, probably within your first week of dispatching agents — you'll never skip the boilerplate again.</p>
+<hr>
+</div></section>
+</section>
+<section class="part" id="part-6" aria-labelledby="part-6-h">
+<h1 id="part-6-h">Part 6 — Where to go from here</h1>
+<section class="section" id="section-18" data-section-tag="meta" aria-labelledby="section-18-h">
+<div class="section-body">
+<h2 id="section-18-h">Section 18 — Closing checklist</h2>
+<p>If you take one thing from this guide, take this checklist.</p>
+<ol>
+<li><strong>Install Claude Code.</strong> (Section 4.)</li>
+<li><strong>Pick a project you'd actually use yourself.</strong> Not a tutorial. Something you want to exist.</li>
+<li><strong><code>git init</code> before anything else.</strong> (Section 3.)</li>
+<li><strong>Write a 30-line CLAUDE.md.</strong> (Section 10.)</li>
+<li><strong>Run the four-phase loop.</strong> Explore → Plan → Implement → Verify. Commit between rounds.</li>
+<li><strong>Ship something this weekend.</strong> Vercel, public URL, share with a friend.</li>
+</ol>
+<p>Don't pick a learning project. Pick something you want to exist. Motivation does the rest.</p>
+<h3>When you're ready to go deeper</h3>
+<ul>
+<li><strong>Add tests</strong> to whatever you built (section 12). Catch the bugs you can't see.</li>
+<li><strong>Write your first spec</strong> for the next feature (section 13). Notice how much clearer Claude's output gets.</li>
+<li><strong>Try a redteam</strong> on a spec before you implement (section 14). The first time the sub-agents catch something real, you'll never skip it again.</li>
+<li><strong>Run a parallel research session</strong> alongside your engineer (section 16). The first time you finish a feature and the next one is already specced and waiting, you'll know why.</li>
+</ul>
+<h3>Where to ask for help</h3>
+<ul>
+<li>Found a bug in this guide? Open an issue on the repo.</li>
+<li>Have a better prompt? Send a PR.</li>
+<li>Disagree with an opinion here? Tell me why; I'll update.</li>
+</ul>
+<p>— Prem</p>
+<hr>
+<p><em>This guide is meant to evolve. Last updated May 2026.</em></p>
+</div></section>
+</section>
+<!-- BUILD:CONTENT-END -->
+</main>
+
+<aside class="toc" aria-label="Table of contents">
+<!-- BUILD:TOC-START -->
+<ul class="toc-list">
+<li class="toc-part">Part 1 — Deciding</li>
+<li class="toc-section toc-tag-meta"><a href="#section-1">1. Should you use Claude Code at all?</a></li>
+<li class="toc-part">Part 2 — Foundations</li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-2">2. The terminal and folders</a></li>
+<li class="toc-section toc-tag-lovable-handles"><a href="#section-3">3. Your project folder, and why git is your safety net</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-4">4. Install Claude Code</a></li>
+<li class="toc-part">Part 3 — Build Your First App</li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-5">5. Pick what you're building</a></li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-6">6. The four-phase loop: build the first version</a></li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-7">7. Add a feature to whatever you built</a></li>
+<li class="toc-section toc-tag-lovable-handles"><a href="#section-8">8. Ship it to the world: deploy with Vercel</a></li>
+<li class="toc-section toc-tag-lovable-handles"><a href="#section-9">9. Make it real: from local storage to a real database</a></li>
+<li class="toc-part">Part 4 — Going Deeper</li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-10">10. CLAUDE.md: your project's memory</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-11">11. Plan mode: think before you build</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-12">12. Tests: how Claude knows when it's done</a></li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-13">13. Specs: writing down what &quot;done&quot; looks like</a></li>
+<li class="toc-part">Part 5 — The Serious-Projects Toolkit</li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-14">14. Redteam: have Claude attack its own plan</a></li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-15">15. The full chain</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-16">16. Running parallel sessions: research vs. implementation</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-17">17. Dispatch agents: hard limits keep them honest</a></li>
+<li class="toc-part">Part 6 — Where to go from here</li>
+<li class="toc-section toc-tag-meta"><a href="#section-18">18. Closing checklist</a></li>
+</ul>
+<!-- BUILD:TOC-END -->
+</aside>
+
+<div class="toc-overlay" aria-hidden="true" role="dialog" aria-label="Table of contents">
+  <button class="toc-overlay-close" type="button" aria-label="Close">&times;</button>
+  <h2>Jump to&hellip;</h2>
+  <div class="toc-overlay-content"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var html = document.documentElement;
+
+  function lsGet(k, fb) { try { var v = localStorage.getItem(k); return v == null ? fb : v; } catch (e) { return fb; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function ssGet(k, fb) { try { var v = sessionStorage.getItem(k); return v == null ? fb : v; } catch (e) { return fb; } }
+  function ssSet(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+
+  function detectOS() {
+    var ua = navigator.userAgent || '';
+    if (/Mac|iPhone|iPad|iPod/.test(ua)) return 'macos';
+    if (/Windows/.test(ua)) return 'windows';
+    if (/Linux|Android|CrOS/.test(ua)) return 'linux';
+    return 'macos';
+  }
+
+  function setOS(os) {
+    html.setAttribute('data-os', os);
+    lsSet('os-preference', os);
+    $$('.os-segment button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.os === os ? 'true' : 'false');
+    });
+    var sel = $('.os-select');
+    if (sel) sel.value = os;
+  }
+
+  function initOsPicker() {
+    setOS(lsGet('os-preference', null) || detectOS());
+    $$('.os-segment button').forEach(function (b) {
+      b.addEventListener('click', function () { setOS(b.dataset.os); });
+    });
+    var sel = $('.os-select');
+    if (sel) sel.addEventListener('change', function () { setOS(sel.value); });
+  }
+
+  function setLovable(on) {
+    html.setAttribute('data-lovable', on ? 'on' : 'off');
+    lsSet('lovable-mode', on ? 'on' : 'off');
+    var cb = $('.lovable-toggle input');
+    if (cb) {
+      cb.checked = on;
+      cb.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+    // Reset per-card expansion every time the toggle flips.
+    $$('.section[data-expanded]').forEach(function (s) { s.removeAttribute('data-expanded'); });
+    var banner = $('.lovable-banner');
+    if (banner) {
+      var dismissed = ssGet('banner-dismissed', '0') === '1';
+      banner.hidden = !on || dismissed;
+    }
+  }
+
+  function initLovableToggle() {
+    setLovable(lsGet('lovable-mode', 'off') === 'on');
+    var cb = $('.lovable-toggle input');
+    if (cb) cb.addEventListener('change', function () { setLovable(cb.checked); });
+  }
+
+  function initCollapsedCards() {
+    $$('.collapsed-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        var sec = card.closest('.section');
+        if (sec) {
+          sec.setAttribute('data-expanded', '1');
+          var h = sec.querySelector('h2');
+          if (h && typeof h.focus === 'function') {
+            h.setAttribute('tabindex', '-1');
+            h.focus({ preventScroll: false });
+          }
+        }
+      });
+    });
+  }
+
+  function initBanner() {
+    var d = $('.banner-dismiss');
+    if (!d) return;
+    d.addEventListener('click', function () {
+      ssSet('banner-dismissed', '1');
+      var b = $('.lovable-banner');
+      if (b) b.hidden = true;
+    });
+  }
+
+  function initCopyButtons() {
+    $$('pre').forEach(function (pre) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-btn';
+      btn.textContent = 'Copy';
+      btn.setAttribute('aria-label', 'Copy code to clipboard');
+      btn.addEventListener('click', function () {
+        var code = pre.querySelector('code');
+        var text = code ? code.innerText : '';
+        var done = function (msg) {
+          btn.textContent = msg;
+          btn.setAttribute('data-copied', '1');
+          setTimeout(function () {
+            btn.textContent = 'Copy';
+            btn.removeAttribute('data-copied');
+          }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { done('Copied!'); }, function () {
+            done(navigator.platform.indexOf('Mac') >= 0 ? 'Press Cmd+C' : 'Press Ctrl+C');
+          });
+        } else {
+          done(navigator.platform.indexOf('Mac') >= 0 ? 'Press Cmd+C' : 'Press Ctrl+C');
+        }
+      });
+      pre.appendChild(btn);
+    });
+  }
+
+  function initTocScrollspy() {
+    var sections = $$('.section[id]');
+    var links = {};
+    $$('aside.toc .toc-list a').forEach(function (a) {
+      links[decodeURIComponent(a.getAttribute('href').slice(1))] = a;
+    });
+    if (!sections.length || !Object.keys(links).length) return;
+    var current = null;
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          if (current && current !== links[e.target.id]) current.classList.remove('active');
+          var l = links[e.target.id];
+          if (l) { l.classList.add('active'); current = l; }
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function (s) { obs.observe(s); });
+  }
+
+  function initMobileToc() {
+    var btn = $('.toc-toggle');
+    var overlay = $('.toc-overlay');
+    var close = $('.toc-overlay-close');
+    var content = $('.toc-overlay-content');
+    var sourceList = $('aside.toc .toc-list');
+    if (!btn || !overlay || !content) return;
+    if (sourceList) content.appendChild(sourceList.cloneNode(true));
+    var openOverlay = function () {
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    };
+    var closeOverlay = function () {
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    };
+    btn.addEventListener('click', openOverlay);
+    if (close) close.addEventListener('click', closeOverlay);
+    overlay.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A') closeOverlay();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') closeOverlay();
+    });
+  }
+
+  function init() {
+    initOsPicker();
+    initLovableToggle();
+    initCollapsedCards();
+    initBanner();
+    initCopyButtons();
+    initTocScrollspy();
+    initMobileToc();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
