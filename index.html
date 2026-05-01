@@ -724,16 +724,54 @@ git commit -m &quot;first working version&quot;</code></pre>
 <li>Asking Claude: <code>&gt; read through my Firestore code and tell me where the security holes are</code></li>
 </ul>
 <p>Once it works, commit again. Push. Vercel redeploys. You now have a real app with real data.</p>
+</div></section>
+<section class="section" id="section-10" data-section-tag="also-lovable" aria-labelledby="section-10-h">
+<div class="section-body">
+<h2 id="section-10-h">Section 10 — Add an AI feature: an app that calls a model at runtime</h2>
+<p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
+<p>This is the section where your app stops being software you built <em>with</em> AI and starts being software that <em>uses</em> AI — a real-time call to a model, response baked into your UI. For the meditation audience this guide is aimed at, the obvious move is something like a weekly reflection summarizer: feed the model your last seven days of journal entries, get back a short paragraph noting patterns. Cheap, useful, and emotionally meaningful in a way a todo app isn't.</p>
+<p>Two things to get right before you write a line of code: which model, and where the API key lives.</p>
+<p><strong>Pick a small model.</strong> You already have a Claude account from section 4, so the natural choice is <strong>Claude Haiku 4.5</strong> — the smallest, cheapest Claude model. At about $1 per million input tokens and $5 per million output tokens, a typical small-feature call (~1,000 input tokens, ~300 output) costs about a quarter of a cent. $10 of credit is roughly four thousand calls — months of personal use.</p>
+<p>If you'd rather use something else: <strong>GPT-5 mini</strong> is similar pricing on a separate account at platform.openai.com; <strong>Gemini 2.5 Flash</strong> is the absolute cheapest mainstream option. The non-negotiable rule, whatever you pick: <strong>stay on the small models for personal projects.</strong> Sonnet, GPT-5, and Gemini Pro are 10–20× the cost; one bug in a loop can spend $50 in an afternoon.</p>
+<p><strong>Your API bill is separate from your Claude Code subscription.</strong> This confuses everyone. Pro/Max covers the Claude Code CLI tool. Calling the API from your own app is metered at console.anthropic.com — different login, different billing, different dollar pool. <strong>Set a monthly spend cap in the API console as your first action.</strong> $10/month covers everything in this guide.</p>
+<p><strong>Never put the API key in the browser.</strong> Your API key is a credit card. Anyone who reads your site's source can spend your money. The rule is absolute: the key lives on a server, never in client-side code. For an app deployed on Vercel (section 8), the simplest setup is a <strong>serverless function</strong> — a tiny piece of code at a URL like <code>/api/summarize</code>. Your browser posts to that URL with the user's data; the function calls the model with your secret key; the response flows back. The key never touches the browser.</p>
+<p>Run this:</p>
+<pre><code class="language-plain">&gt; I want to add an AI feature to my app: [describe in one
+  sentence]. Use Claude Haiku 4.5. Set it up as a Vercel
+  serverless function so my API key stays server-side.
+  Plan first: what files change, where do I store the key,
+  how is the function called from the browser, and what's
+  the cost shape per call?</code></pre>
+<p>The plan should walk you through:</p>
+<ol>
+<li>Creating an account at console.anthropic.com (separate from your Claude Code subscription)</li>
+<li>Generating an API key and setting a monthly spend cap</li>
+<li>Adding the key to Vercel as an <strong>environment variable</strong> (never committed to git, never in client-side code)</li>
+<li>Writing a function at <code>api/[feature-name].js</code> that calls the model</li>
+<li>Updating the browser to fetch from <code>/api/[feature-name]</code> instead of calling the model directly</li>
+</ol>
+<p><strong>Bound the blast radius.</strong> A few habits that keep a stray bug from emptying your wallet:</p>
+<ul>
+<li><strong>Cap input length client-side.</strong> If user input is bigger than ~4,000 characters, refuse or truncate before sending.</li>
+<li><strong>Pick a low <code>max_tokens</code></strong> on the response. 500 is enough for most features.</li>
+<li><strong>Add a per-user, per-day rate limit.</strong> Stored in Firestore. Even 10 requests per user per day prevents most accidents.</li>
+<li><strong>Watch the console for the first week.</strong> API consoles show spend per day. Look at it.</li>
+</ul>
+<p>A useful audit prompt after you ship:</p>
+<pre><code class="language-plain">&gt; read through my AI feature code and tell me where someone
+  could trigger high cost — large inputs, missing rate limits,
+  unbounded loops, anything I might have missed.</code></pre>
+<p>The first time you ship a feature that calls a model live, it's a small thrill. Keep the costs bounded and that thrill stays a thrill instead of turning into a panicked dashboard refresh.</p>
 <hr>
 </div></section>
 </section>
 <section class="part" id="part-4" aria-labelledby="part-4-h">
 <h1 id="part-4-h">Part 4 — Going Deeper</h1>
 <p><em>The techniques that make Claude Code dramatically better. Read these as you start to outgrow the basics.</em></p>
-<section class="section" id="section-10" data-section-tag="cc-only" aria-labelledby="section-10-h">
-<button class="collapsed-card" type="button" aria-label="Expand section 10">Section 10 — CLAUDE.md: your project's memory. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<section class="section" id="section-11" data-section-tag="cc-only" aria-labelledby="section-11-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 11">Section 11 — CLAUDE.md: your project's memory. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
 <div class="section-body">
-<h2 id="section-10-h">Section 10 — CLAUDE.md: your project's memory</h2>
+<h2 id="section-11-h">Section 11 — CLAUDE.md: your project's memory</h2>
 <p class="section-marker section-marker-cc-only">Claude Code only</p>
 <p>The most leveraged file in your project is <code>CLAUDE.md</code>. It lives in your project root. Claude Code reads it at the start of every session — it's how you tell Claude what this project is and how to behave inside it.</p>
 <p>Without a CLAUDE.md, you re-explain your project every time. With a good one, Claude shows up already knowing your stack, your conventions, and your hard rules.</p>
@@ -752,10 +790,10 @@ git commit -m &quot;first working version&quot;</code></pre>
 <p><strong>Keep it short.</strong> Aim for 30 lines to start, and cap at around 100 even after years of use. This is a contract, not a textbook. The discipline: when you find yourself explaining the same thing twice in different sessions, that's a CLAUDE.md entry.</p>
 <p>A great CLAUDE.md is the single most compounding investment in this whole guide. The difference between explaining yourself every session and never explaining yourself again.</p>
 </div></section>
-<section class="section" id="section-11" data-section-tag="cc-only" aria-labelledby="section-11-h">
-<button class="collapsed-card" type="button" aria-label="Expand section 11">Section 11 — Plan mode: think before you build. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<section class="section" id="section-12" data-section-tag="cc-only" aria-labelledby="section-12-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 12">Section 12 — Plan mode: think before you build. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
 <div class="section-body">
-<h2 id="section-11-h">Section 11 — Plan mode: think before you build</h2>
+<h2 id="section-12-h">Section 12 — Plan mode: think before you build</h2>
 <p class="section-marker section-marker-cc-only">Claude Code only</p>
 <p>You met plan mode briefly in section 6. Now the full picture.</p>
 <p>Press <strong>Shift+Tab</strong> to toggle plan mode. In plan mode, Claude reads everything it needs but writes nothing. It produces a plan you can edit and approve. Press Shift+Tab again to flip back to execute mode and let Claude implement what you signed off on.</p>
@@ -768,10 +806,10 @@ git commit -m &quot;first working version&quot;</code></pre>
 <p>What makes plan mode work isn't the mode itself — it's that you take the plan seriously. Read it. Push back on anything that smells off. Ask for alternatives. The plan is cheap to revise; the implementation is expensive to redo.</p>
 <p>A common failure mode: you scan the plan, type &quot;looks good,&quot; let Claude implement, and then realize halfway through that the approach was wrong. The plan deserves the same care as a code review. Two minutes spent on the plan saves an hour of cleanup.</p>
 </div></section>
-<section class="section" id="section-12" data-section-tag="cc-only" aria-labelledby="section-12-h">
-<button class="collapsed-card" type="button" aria-label="Expand section 12">Section 12 — Tests: how Claude knows when it's done. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<section class="section" id="section-13" data-section-tag="cc-only" aria-labelledby="section-13-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 13">Section 13 — Tests: how Claude knows when it's done. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
 <div class="section-body">
-<h2 id="section-12-h">Section 12 — Tests: how Claude knows when it's done</h2>
+<h2 id="section-13-h">Section 13 — Tests: how Claude knows when it's done</h2>
 <p class="section-marker section-marker-cc-only">Claude Code only</p>
 <p>Quick definition for anyone new: a <strong>test</strong> is code whose only job is to check that your real code does what it should. You write a sentence like <em>&quot;after I add a habit called 'read,' the list should contain 'read'&quot;</em> — and the test fails loudly if that's not true.</p>
 <p>Why this matters for Claude Code specifically: Claude is great at writing code that <em>looks</em> right but doesn't actually work. Tests catch that. They're also how Claude knows when it's done — instead of you eyeballing every change, the test suite either passes or it doesn't.</p>
@@ -786,9 +824,9 @@ git commit -m &quot;first working version&quot;</code></pre>
   write tests as plain JS files I can run from the terminal.
   No framework if possible.</code></pre>
 </div></section>
-<section class="section" id="section-13" data-section-tag="also-lovable" aria-labelledby="section-13-h">
+<section class="section" id="section-14" data-section-tag="also-lovable" aria-labelledby="section-14-h">
 <div class="section-body">
-<h2 id="section-13-h">Section 13 — Specs: writing down what &quot;done&quot; looks like</h2>
+<h2 id="section-14-h">Section 14 — Specs: writing down what &quot;done&quot; looks like</h2>
 <p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
 <p>A <strong>spec</strong> is a short markdown file describing what success looks like for a feature, before any code gets written. Same idea as a test, but at the requirements level.</p>
 <p>Specs do two things. First, Claude reads the spec and self-checks against it — which catches &quot;solved the wrong problem&quot; early. Second, when you come back to the project next week or next month, the spec tells you (and Claude) what was actually intended.</p>
@@ -813,9 +851,9 @@ git commit -m &quot;first working version&quot;</code></pre>
 <section class="part" id="part-5" aria-labelledby="part-5-h">
 <h1 id="part-5-h">Part 5 — The Serious-Projects Toolkit</h1>
 <p><em>The techniques that separate &quot;I tried it once&quot; from &quot;I ship with this.&quot; You'll know when you need them.</em></p>
-<section class="section" id="section-14" data-section-tag="also-lovable" aria-labelledby="section-14-h">
+<section class="section" id="section-15" data-section-tag="also-lovable" aria-labelledby="section-15-h">
 <div class="section-body">
-<h2 id="section-14-h">Section 14 — Redteam: have Claude attack its own plan</h2>
+<h2 id="section-15-h">Section 15 — Redteam: have Claude attack its own plan</h2>
 <p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
 <p>Borrowed from security: a <strong>redteam</strong> is the practice of attacking your own work to find holes, before someone else does. In Claude Code, the technique is to spawn parallel sub-agents with adversarial personas, each reading the same spec but with a different lens, each running in its own fresh context.</p>
 <p>The fresh-context part is the load-bearing trick. If you do the review in your own conversation, you'll rationalize toward the position you've already convinced yourself of. Sub-agents don't share your conversation history — they can't be primed by what you've been thinking. That's where the independent eyes come from.</p>
@@ -859,27 +897,27 @@ git commit -m &quot;first working version&quot;</code></pre>
 </ul>
 <p>Use redteam before you implement anything serious. Five minutes of redteam saves you days of &quot;oh, we never thought about that.&quot;</p>
 </div></section>
-<section class="section" id="section-15" data-section-tag="also-lovable" aria-labelledby="section-15-h">
+<section class="section" id="section-16" data-section-tag="also-lovable" aria-labelledby="section-16-h">
 <div class="section-body">
-<h2 id="section-15-h">Section 15 — The full chain</h2>
+<h2 id="section-16-h">Section 16 — The full chain</h2>
 <p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
 <p>For any feature serious enough to ship, run the full chain:</p>
 <ol>
 <li><strong>Idea</strong> — rough concept, sentence or two.</li>
-<li><strong>Spec</strong> — write it down formally as <code>spec.md</code>. (Section 13.)</li>
-<li><strong>Redteam</strong> — three parallel personae attack the spec, find gaps, fold findings back in. (Section 14.)</li>
-<li><strong>Plan</strong> — implementation plan, in plan mode, against the updated spec. (Section 11.)</li>
-<li><strong>Tests</strong> — Claude writes tests against the spec <em>before</em> implementation. (Section 12.)</li>
+<li><strong>Spec</strong> — write it down formally as <code>spec.md</code>. (Section 14.)</li>
+<li><strong>Redteam</strong> — three parallel personae attack the spec, find gaps, fold findings back in. (Section 15.)</li>
+<li><strong>Plan</strong> — implementation plan, in plan mode, against the updated spec. (Section 12.)</li>
+<li><strong>Tests</strong> — Claude writes tests against the spec <em>before</em> implementation. (Section 13.)</li>
 <li><strong>Implement</strong> — Claude writes the code. You watch.</li>
-<li><strong>Review</strong> — a separate Claude session reviews the diff. Works because that session has no ego in the implementation. (Section 16.)</li>
+<li><strong>Review</strong> — a separate Claude session reviews the diff. Works because that session has no ego in the implementation. (Section 17.)</li>
 </ol>
 <p>Heavy? Yes. But this is what serious software engineering looks like with AI in the loop, and beyond a certain project size you need this discipline. The shortcuts always cost more than the chain.</p>
 <p>Use the four-phase loop (section 6) for small things. Use the chain for things you actually want to ship.</p>
 </div></section>
-<section class="section" id="section-16" data-section-tag="cc-only" aria-labelledby="section-16-h">
-<button class="collapsed-card" type="button" aria-label="Expand section 16">Section 16 — Running parallel sessions: research vs. implementation. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<section class="section" id="section-17" data-section-tag="cc-only" aria-labelledby="section-17-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 17">Section 17 — Running parallel sessions: research vs. implementation. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
 <div class="section-body">
-<h2 id="section-16-h">Section 16 — Running parallel sessions: research vs. implementation</h2>
+<h2 id="section-17-h">Section 17 — Running parallel sessions: research vs. implementation</h2>
 <p class="section-marker section-marker-cc-only">Claude Code only</p>
 <p>When I'm working seriously, my screen looks like this:</p>
 <pre><code class="language-plain">┌──────────────────────────┬──────────────────────────┐
@@ -902,12 +940,12 @@ git commit -m &quot;first working version&quot;</code></pre>
 </ul>
 <p><strong>A real warning.</strong> You'll wait a lot, even with parallel sessions. Resist the temptation to fill every moment with another Claude task. Sometimes the right move is to step away and let one finish.</p>
 </div></section>
-<section class="section" id="section-17" data-section-tag="cc-only" aria-labelledby="section-17-h">
-<button class="collapsed-card" type="button" aria-label="Expand section 17">Section 17 — Dispatch agents: hard limits keep them honest. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
+<section class="section" id="section-18" data-section-tag="cc-only" aria-labelledby="section-18-h">
+<button class="collapsed-card" type="button" aria-label="Expand section 18">Section 18 — Dispatch agents: hard limits keep them honest. <span class="cc-marker">Claude Code only</span> — skip, or click to expand.</button>
 <div class="section-body">
-<h2 id="section-17-h">Section 17 — Dispatch agents: hard limits keep them honest</h2>
+<h2 id="section-18-h">Section 18 — Dispatch agents: hard limits keep them honest</h2>
 <p class="section-marker section-marker-cc-only">Claude Code only</p>
-<p>Once you're comfortable spawning sub-agents (section 16), you'll hit the next problem: sub-agents drift. They loop on errors, retry the same broken approach with slight variations, decide a failing safety gate is &quot;the problem&quot; and disable it, and at the end of two hours of wall time return a confident summary that bears no relation to what actually happened.</p>
+<p>Once you're comfortable spawning sub-agents (section 17), you'll hit the next problem: sub-agents drift. They loop on errors, retry the same broken approach with slight variations, decide a failing safety gate is &quot;the problem&quot; and disable it, and at the end of two hours of wall time return a confident summary that bears no relation to what actually happened.</p>
 <p>The fix is not better agents. The fix is <strong>hard limits + isolation</strong>, written into every dispatch prompt. The boilerplate below is mechanical, not stylistic — every line earned its place from a real incident.</p>
 <h3>Before you spawn</h3>
 <p>Write down on a scratch doc:</p>
@@ -957,25 +995,25 @@ stuck, followed by 2-3 sentences on what happened.</code></pre>
 </section>
 <section class="part" id="part-6" aria-labelledby="part-6-h">
 <h1 id="part-6-h">Part 6 — Where to go from here</h1>
-<section class="section" id="section-18" data-section-tag="meta" aria-labelledby="section-18-h">
+<section class="section" id="section-19" data-section-tag="meta" aria-labelledby="section-19-h">
 <div class="section-body">
-<h2 id="section-18-h">Section 18 — Closing checklist</h2>
+<h2 id="section-19-h">Section 19 — Closing checklist</h2>
 <p>If you take one thing from this guide, take this checklist.</p>
 <ol>
 <li><strong>Install Claude Code.</strong> (Section 4.)</li>
 <li><strong>Pick a project you'd actually use yourself.</strong> Not a tutorial. Something you want to exist.</li>
 <li><strong><code>git init</code> before anything else.</strong> (Section 3.)</li>
-<li><strong>Write a 30-line CLAUDE.md.</strong> (Section 10.)</li>
+<li><strong>Write a 30-line CLAUDE.md.</strong> (Section 11.)</li>
 <li><strong>Run the four-phase loop.</strong> Explore → Plan → Implement → Verify. Commit between rounds.</li>
 <li><strong>Ship something this weekend.</strong> Vercel, public URL, share with a friend.</li>
 </ol>
 <p>Don't pick a learning project. Pick something you want to exist. Motivation does the rest.</p>
 <h3>When you're ready to go deeper</h3>
 <ul>
-<li><strong>Add tests</strong> to whatever you built (section 12). Catch the bugs you can't see.</li>
-<li><strong>Write your first spec</strong> for the next feature (section 13). Notice how much clearer Claude's output gets.</li>
-<li><strong>Try a redteam</strong> on a spec before you implement (section 14). The first time the sub-agents catch something real, you'll never skip it again.</li>
-<li><strong>Run a parallel research session</strong> alongside your engineer (section 16). The first time you finish a feature and the next one is already specced and waiting, you'll know why.</li>
+<li><strong>Add tests</strong> to whatever you built (section 13). Catch the bugs you can't see.</li>
+<li><strong>Write your first spec</strong> for the next feature (section 14). Notice how much clearer Claude's output gets.</li>
+<li><strong>Try a redteam</strong> on a spec before you implement (section 15). The first time the sub-agents catch something real, you'll never skip it again.</li>
+<li><strong>Run a parallel research session</strong> alongside your engineer (section 17). The first time you finish a feature and the next one is already specced and waiting, you'll know why.</li>
 </ul>
 <h3>Where to ask for help</h3>
 <ul>
@@ -1006,18 +1044,19 @@ stuck, followed by 2-3 sentences on what happened.</code></pre>
 <li class="toc-section toc-tag-also-lovable"><a href="#section-7">7. Add a feature to whatever you built</a></li>
 <li class="toc-section toc-tag-lovable-handles"><a href="#section-8">8. Ship it to the world: deploy with Vercel</a></li>
 <li class="toc-section toc-tag-lovable-handles"><a href="#section-9">9. Make it real: from local storage to a real database</a></li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-10">10. Add an AI feature: an app that calls a model at runtime</a></li>
 <li class="toc-part">Part 4 — Going Deeper</li>
-<li class="toc-section toc-tag-cc-only"><a href="#section-10">10. CLAUDE.md: your project's memory</a></li>
-<li class="toc-section toc-tag-cc-only"><a href="#section-11">11. Plan mode: think before you build</a></li>
-<li class="toc-section toc-tag-cc-only"><a href="#section-12">12. Tests: how Claude knows when it's done</a></li>
-<li class="toc-section toc-tag-also-lovable"><a href="#section-13">13. Specs: writing down what &quot;done&quot; looks like</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-11">11. CLAUDE.md: your project's memory</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-12">12. Plan mode: think before you build</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-13">13. Tests: how Claude knows when it's done</a></li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-14">14. Specs: writing down what &quot;done&quot; looks like</a></li>
 <li class="toc-part">Part 5 — The Serious-Projects Toolkit</li>
-<li class="toc-section toc-tag-also-lovable"><a href="#section-14">14. Redteam: have Claude attack its own plan</a></li>
-<li class="toc-section toc-tag-also-lovable"><a href="#section-15">15. The full chain</a></li>
-<li class="toc-section toc-tag-cc-only"><a href="#section-16">16. Running parallel sessions: research vs. implementation</a></li>
-<li class="toc-section toc-tag-cc-only"><a href="#section-17">17. Dispatch agents: hard limits keep them honest</a></li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-15">15. Redteam: have Claude attack its own plan</a></li>
+<li class="toc-section toc-tag-also-lovable"><a href="#section-16">16. The full chain</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-17">17. Running parallel sessions: research vs. implementation</a></li>
+<li class="toc-section toc-tag-cc-only"><a href="#section-18">18. Dispatch agents: hard limits keep them honest</a></li>
 <li class="toc-part">Part 6 — Where to go from here</li>
-<li class="toc-section toc-tag-meta"><a href="#section-18">18. Closing checklist</a></li>
+<li class="toc-section toc-tag-meta"><a href="#section-19">19. Closing checklist</a></li>
 </ul>
 <!-- BUILD:TOC-END -->
 </aside>

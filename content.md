@@ -434,13 +434,64 @@ After migration, verify by:
 
 Once it works, commit again. Push. Vercel redeploys. You now have a real app with real data.
 
+## Section 10 — Add an AI feature: an app that calls a model at runtime
+<!-- tag: also-lovable -->
+
+This is the section where your app stops being software you built *with* AI and starts being software that *uses* AI — a real-time call to a model, response baked into your UI. For the meditation audience this guide is aimed at, the obvious move is something like a weekly reflection summarizer: feed the model your last seven days of journal entries, get back a short paragraph noting patterns. Cheap, useful, and emotionally meaningful in a way a todo app isn't.
+
+Two things to get right before you write a line of code: which model, and where the API key lives.
+
+**Pick a small model.** You already have a Claude account from section 4, so the natural choice is **Claude Haiku 4.5** — the smallest, cheapest Claude model. At about $1 per million input tokens and $5 per million output tokens, a typical small-feature call (~1,000 input tokens, ~300 output) costs about a quarter of a cent. $10 of credit is roughly four thousand calls — months of personal use.
+
+If you'd rather use something else: **GPT-5 mini** is similar pricing on a separate account at platform.openai.com; **Gemini 2.5 Flash** is the absolute cheapest mainstream option. The non-negotiable rule, whatever you pick: **stay on the small models for personal projects.** Sonnet, GPT-5, and Gemini Pro are 10–20× the cost; one bug in a loop can spend $50 in an afternoon.
+
+**Your API bill is separate from your Claude Code subscription.** This confuses everyone. Pro/Max covers the Claude Code CLI tool. Calling the API from your own app is metered at console.anthropic.com — different login, different billing, different dollar pool. **Set a monthly spend cap in the API console as your first action.** $10/month covers everything in this guide.
+
+**Never put the API key in the browser.** Your API key is a credit card. Anyone who reads your site's source can spend your money. The rule is absolute: the key lives on a server, never in client-side code. For an app deployed on Vercel (section 8), the simplest setup is a **serverless function** — a tiny piece of code at a URL like `/api/summarize`. Your browser posts to that URL with the user's data; the function calls the model with your secret key; the response flows back. The key never touches the browser.
+
+Run this:
+
+```
+> I want to add an AI feature to my app: [describe in one
+  sentence]. Use Claude Haiku 4.5. Set it up as a Vercel
+  serverless function so my API key stays server-side.
+  Plan first: what files change, where do I store the key,
+  how is the function called from the browser, and what's
+  the cost shape per call?
+```
+
+The plan should walk you through:
+
+1. Creating an account at console.anthropic.com (separate from your Claude Code subscription)
+2. Generating an API key and setting a monthly spend cap
+3. Adding the key to Vercel as an **environment variable** (never committed to git, never in client-side code)
+4. Writing a function at `api/[feature-name].js` that calls the model
+5. Updating the browser to fetch from `/api/[feature-name]` instead of calling the model directly
+
+**Bound the blast radius.** A few habits that keep a stray bug from emptying your wallet:
+
+- **Cap input length client-side.** If user input is bigger than ~4,000 characters, refuse or truncate before sending.
+- **Pick a low `max_tokens`** on the response. 500 is enough for most features.
+- **Add a per-user, per-day rate limit.** Stored in Firestore. Even 10 requests per user per day prevents most accidents.
+- **Watch the console for the first week.** API consoles show spend per day. Look at it.
+
+A useful audit prompt after you ship:
+
+```
+> read through my AI feature code and tell me where someone
+  could trigger high cost — large inputs, missing rate limits,
+  unbounded loops, anything I might have missed.
+```
+
+The first time you ship a feature that calls a model live, it's a small thrill. Keep the costs bounded and that thrill stays a thrill instead of turning into a panicked dashboard refresh.
+
 ---
 
 # Part 4 — Going Deeper
 
 *The techniques that make Claude Code dramatically better. Read these as you start to outgrow the basics.*
 
-## Section 10 — CLAUDE.md: your project's memory
+## Section 11 — CLAUDE.md: your project's memory
 <!-- tag: cc-only -->
 
 The most leveraged file in your project is `CLAUDE.md`. It lives in your project root. Claude Code reads it at the start of every session — it's how you tell Claude what this project is and how to behave inside it.
@@ -471,7 +522,7 @@ Claude will ask things like *"What's your preferred testing framework?"* or *"Ar
 
 A great CLAUDE.md is the single most compounding investment in this whole guide. The difference between explaining yourself every session and never explaining yourself again.
 
-## Section 11 — Plan mode: think before you build
+## Section 12 — Plan mode: think before you build
 <!-- tag: cc-only -->
 
 You met plan mode briefly in section 6. Now the full picture.
@@ -493,7 +544,7 @@ What makes plan mode work isn't the mode itself — it's that you take the plan 
 
 A common failure mode: you scan the plan, type "looks good," let Claude implement, and then realize halfway through that the approach was wrong. The plan deserves the same care as a code review. Two minutes spent on the plan saves an hour of cleanup.
 
-## Section 12 — Tests: how Claude knows when it's done
+## Section 13 — Tests: how Claude knows when it's done
 <!-- tag: cc-only -->
 
 Quick definition for anyone new: a **test** is code whose only job is to check that your real code does what it should. You write a sentence like *"after I add a habit called 'read,' the list should contain 'read'"* — and the test fails loudly if that's not true.
@@ -519,7 +570,7 @@ For your first projects, you don't need a sophisticated test framework. A few as
   No framework if possible.
 ```
 
-## Section 13 — Specs: writing down what "done" looks like
+## Section 14 — Specs: writing down what "done" looks like
 <!-- tag: also-lovable -->
 
 A **spec** is a short markdown file describing what success looks like for a feature, before any code gets written. Same idea as a test, but at the requirements level.
@@ -556,7 +607,7 @@ A useful prompt for any non-trivial feature:
 
 *The techniques that separate "I tried it once" from "I ship with this." You'll know when you need them.*
 
-## Section 14 — Redteam: have Claude attack its own plan
+## Section 15 — Redteam: have Claude attack its own plan
 <!-- tag: also-lovable -->
 
 Borrowed from security: a **redteam** is the practice of attacking your own work to find holes, before someone else does. In Claude Code, the technique is to spawn parallel sub-agents with adversarial personas, each reading the same spec but with a different lens, each running in its own fresh context.
@@ -607,24 +658,24 @@ The fresh-context part is the load-bearing trick. If you do the review in your o
 
 Use redteam before you implement anything serious. Five minutes of redteam saves you days of "oh, we never thought about that."
 
-## Section 15 — The full chain
+## Section 16 — The full chain
 <!-- tag: also-lovable -->
 
 For any feature serious enough to ship, run the full chain:
 
 1. **Idea** — rough concept, sentence or two.
-2. **Spec** — write it down formally as `spec.md`. (Section 13.)
-3. **Redteam** — three parallel personae attack the spec, find gaps, fold findings back in. (Section 14.)
-4. **Plan** — implementation plan, in plan mode, against the updated spec. (Section 11.)
-5. **Tests** — Claude writes tests against the spec *before* implementation. (Section 12.)
+2. **Spec** — write it down formally as `spec.md`. (Section 14.)
+3. **Redteam** — three parallel personae attack the spec, find gaps, fold findings back in. (Section 15.)
+4. **Plan** — implementation plan, in plan mode, against the updated spec. (Section 12.)
+5. **Tests** — Claude writes tests against the spec *before* implementation. (Section 13.)
 6. **Implement** — Claude writes the code. You watch.
-7. **Review** — a separate Claude session reviews the diff. Works because that session has no ego in the implementation. (Section 16.)
+7. **Review** — a separate Claude session reviews the diff. Works because that session has no ego in the implementation. (Section 17.)
 
 Heavy? Yes. But this is what serious software engineering looks like with AI in the loop, and beyond a certain project size you need this discipline. The shortcuts always cost more than the chain.
 
 Use the four-phase loop (section 6) for small things. Use the chain for things you actually want to ship.
 
-## Section 16 — Running parallel sessions: research vs. implementation
+## Section 17 — Running parallel sessions: research vs. implementation
 <!-- tag: cc-only -->
 
 When I'm working seriously, my screen looks like this:
@@ -656,10 +707,10 @@ Two projects in flight, two sessions per project. Four terminals, one me.
 
 **A real warning.** You'll wait a lot, even with parallel sessions. Resist the temptation to fill every moment with another Claude task. Sometimes the right move is to step away and let one finish.
 
-## Section 17 — Dispatch agents: hard limits keep them honest
+## Section 18 — Dispatch agents: hard limits keep them honest
 <!-- tag: cc-only -->
 
-Once you're comfortable spawning sub-agents (section 16), you'll hit the next problem: sub-agents drift. They loop on errors, retry the same broken approach with slight variations, decide a failing safety gate is "the problem" and disable it, and at the end of two hours of wall time return a confident summary that bears no relation to what actually happened.
+Once you're comfortable spawning sub-agents (section 17), you'll hit the next problem: sub-agents drift. They loop on errors, retry the same broken approach with slight variations, decide a failing safety gate is "the problem" and disable it, and at the end of two hours of wall time return a confident summary that bears no relation to what actually happened.
 
 The fix is not better agents. The fix is **hard limits + isolation**, written into every dispatch prompt. The boilerplate below is mechanical, not stylistic — every line earned its place from a real incident.
 
@@ -719,7 +770,7 @@ This pattern is more discipline than technique. The first time it saves you — 
 
 # Part 6 — Where to go from here
 
-## Section 18 — Closing checklist
+## Section 19 — Closing checklist
 <!-- tag: meta -->
 
 If you take one thing from this guide, take this checklist.
@@ -727,7 +778,7 @@ If you take one thing from this guide, take this checklist.
 1. **Install Claude Code.** (Section 4.)
 2. **Pick a project you'd actually use yourself.** Not a tutorial. Something you want to exist.
 3. **`git init` before anything else.** (Section 3.)
-4. **Write a 30-line CLAUDE.md.** (Section 10.)
+4. **Write a 30-line CLAUDE.md.** (Section 11.)
 5. **Run the four-phase loop.** Explore → Plan → Implement → Verify. Commit between rounds.
 6. **Ship something this weekend.** Vercel, public URL, share with a friend.
 
@@ -735,10 +786,10 @@ Don't pick a learning project. Pick something you want to exist. Motivation does
 
 ### When you're ready to go deeper
 
-- **Add tests** to whatever you built (section 12). Catch the bugs you can't see.
-- **Write your first spec** for the next feature (section 13). Notice how much clearer Claude's output gets.
-- **Try a redteam** on a spec before you implement (section 14). The first time the sub-agents catch something real, you'll never skip it again.
-- **Run a parallel research session** alongside your engineer (section 16). The first time you finish a feature and the next one is already specced and waiting, you'll know why.
+- **Add tests** to whatever you built (section 13). Catch the bugs you can't see.
+- **Write your first spec** for the next feature (section 14). Notice how much clearer Claude's output gets.
+- **Try a redteam** on a spec before you implement (section 15). The first time the sub-agents catch something real, you'll never skip it again.
+- **Run a parallel research session** alongside your engineer (section 17). The first time you finish a feature and the next one is already specced and waiting, you'll know why.
 
 ### Where to ask for help
 
