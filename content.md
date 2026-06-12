@@ -213,7 +213,7 @@ The native binary is the recommended path on every platform — it auto-updates,
 Once installed, walk into your project folder and start Claude:
 
 ```bash
-cd ~/Projects/my-first-app
+cd ~/dev/my-first-app
 claude
 ```
 
@@ -232,7 +232,7 @@ Claude will tell you the folder is empty (which it is). That round-trip — your
 ## Section 5 — Pick what you're building
 <!-- tag: also-lovable -->
 
-The single biggest predictor of whether someone sticks with Claude Code is having a project they actually want to use. Don't pick a tutorial project. Pick something you'd open every day.
+The single biggest predictor of whether someone sticks with Claude Code is building something they actually want to use. For your first project, pick something you'd open every day.
 
 If you're not sure where to start, here are five categories that work well for first projects. Each comes with a starter prompt you can adapt — the bracketed parts are yours to fill in. Each prompt asks Claude to propose a plan *before* writing code, so read the plan in chat and push back before you say go. (You'll meet plan mode proper in section 6.)
 
