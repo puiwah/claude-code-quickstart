@@ -64,9 +64,9 @@ Use **Claude Code** if any of these apply:
 - You expect to keep building on this project for months or years and don't want to be locked into one platform's limits.
 - You want full control: any database, any hosting, any framework, any model.
 
-### The honest cost-benefit
+### The cost-benefit of using Claude Code
 
-Full-service builders get you to a working app in a single afternoon. That's real. Many people read the previous list, see they fit the "fast and standard" path, and Lovable is genuinely the right answer for them.
+Full-service builders get you to a working app in a single afternoon. Many people read the previous list, see they fit the "fast and standard" path, and Lovable is genuinely the right answer for them.
 
 What full-service builders do not handle well, today:
 
@@ -83,13 +83,13 @@ What Claude Code asks of you in exchange for no ceiling:
 - Patience for the first hour, when you're slower than you'd be in Lovable.
 - Ongoing taste decisions about hosting, database, deployment.
 
-### My take
+### My path
 
 I went straight to Claude Code when it came out, but I'm an experienced software engineer — that's not a useful data point for most readers. The more useful answer: I'd recommend Lovable to a friend who wants a tool to ship a specific, fairly conventional app this month and never think about it again. I'd recommend Claude Code to a friend who wants to *become someone who builds things*, who has multiple ideas, or who wants to build something that doesn't fit a template.
 
 For the rest of this guide, I'll assume you've picked Claude Code. If you went with Lovable, much of what follows still applies — prompts, the four-phase loop, specs, redteam — and sections that are Claude-Code-specific are clearly marked. Toggle the switch at the top to hide them.
 
-### Quick decision aid
+### In summary: Quick decision aid
 
 | Your situation | Probably the right tool |
 |---|---|
@@ -111,7 +111,7 @@ For the rest of this guide, I'll assume you've picked Claude Code. If you went w
 ## Section 2 — The terminal and folders
 <!-- tag: cc-only -->
 
-Two foundations before anything else, because most people coming to Claude Code are not coming from a developer background.
+Here are two foundations before anything else, because most people coming to Claude Code are not coming from a developer background.
 
 **The terminal** is a window on your computer where you type commands instead of clicking. Programmers use it because typing is faster than clicking once you know what you want. It looks intimidating but it's actually simpler than most apps — no menus, no settings buried in tabs. You type a command, hit enter, something happens.
 
@@ -126,8 +126,9 @@ Why this matters for Claude Code: **Claude doesn't know about your whole compute
 The command for "walk into a folder" is `cd` (change directory). Two commands you'll use constantly:
 
 ```bash
-cd ~/Documents/my-app    # walk into this folder
+cd ~/Documents           # change the current directory to Documents
 pwd                      # show me where I am right now
+ls                       # list all documents in this directory
 ```
 
 That's enough to get going. We'll do this together in section 4.
@@ -137,13 +138,15 @@ That's enough to get going. We'll do this together in section 4.
 
 Before you install Claude Code, decide where your projects will live and set up your safety net.
 
-**Pick a parent folder for all your projects.** I use `~/Projects/`. Inside it, each project gets its own folder. So Aurea lives at `~/Projects/aurea/`, Yantra lives at `~/Projects/yantra/`. Pick a structure you like and stick with it.
+**Pick a parent folder for all your software development projects.** I use `~/dev/`. Inside it, each project gets its own folder. So Aurea lives at `~/dev/aurea/`, Yantra lives at `~/dev/yantra/`. Pick a structure you like and stick with it.
 
 Make your first project folder now:
 
 ```bash
-mkdir -p ~/Projects/my-first-app
-cd ~/Projects/my-first-app
+mkdir ~/dev              # Make a new parent directory called dev; ~/ means a path that starts from your "home directory"
+cd ~/dev                 # Change current directory to dev
+mkdir my-first-app       # See if you can tell what these two do; no ~ required because we're working in dev now
+cd my-first-app          
 ```
 
 **Now, git.** Git is a tool that takes snapshots of your project as it grows. Every snapshot is a recovery point. If Claude does something you don't like — deletes a working file, refactors in a way you hate, "improves" something that wasn't broken — you can roll back to a snapshot in one command.
@@ -153,7 +156,7 @@ This isn't optional. **If you're using Claude Code, you're using git.** Not "you
 1. Claude will eventually do something destructive. Without git, that work is gone. With git, it's `git reset --hard` and you're back where you were.
 2. When something works, you want to lock it in. Commit small, commit often. The blast radius of any bad session is bounded by your last commit — keep the radius small.
 
-Initialize git in your new folder:
+Initialize git while in your new folder (cd there if necessary):
 
 ```bash
 git init
