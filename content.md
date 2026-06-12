@@ -16,7 +16,7 @@
 
 # Prem's Claude Code Quickstart
 
-*The opinionated path I'd take if I were starting today.*
+*A quick guide to getting started building apps with Claude Code.*
 
 *Last updated: May 2026*
 
