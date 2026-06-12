@@ -442,7 +442,7 @@ html { scroll-behavior: smooth; }
 <!-- BUILD:CONTENT-START -->
 <section class="intro" id="intro">
 <h1 class="page-title">Prem's Claude Code Quickstart</h1>
-<p><em>The opinionated path I'd take if I were starting today.</em></p>
+<p><em>A quick guide to getting started building apps with Claude Code.</em></p>
 <p><em>Last updated: May 2026</em></p>
 <hr>
 <p>Hi, it's Prem. At the SMY Uluwatu 2026 retreat I gave a <a href="./presentation.html">presentation on using Claude Code to build apps</a>. This guide is the written companion to that talk.</p>
@@ -478,8 +478,8 @@ html { scroll-behavior: smooth; }
 <li>You expect to keep building on this project for months or years and don't want to be locked into one platform's limits.</li>
 <li>You want full control: any database, any hosting, any framework, any model.</li>
 </ul>
-<h3>The honest cost-benefit</h3>
-<p>Full-service builders get you to a working app in a single afternoon. That's real. Many people read the previous list, see they fit the &quot;fast and standard&quot; path, and Lovable is genuinely the right answer for them.</p>
+<h3>The cost-benefit of using Claude Code</h3>
+<p>Full-service builders get you to a working app in a single afternoon. Many people read the previous list, see they fit the &quot;fast and standard&quot; path, and Lovable is genuinely the right answer for them.</p>
 <p>What full-service builders do not handle well, today:</p>
 <ul>
 <li>Anything that needs more than one AI agent collaborating on the same project.</li>
@@ -495,10 +495,10 @@ html { scroll-behavior: smooth; }
 <li>Patience for the first hour, when you're slower than you'd be in Lovable.</li>
 <li>Ongoing taste decisions about hosting, database, deployment.</li>
 </ul>
-<h3>My take</h3>
+<h3>My path</h3>
 <p>I went straight to Claude Code when it came out, but I'm an experienced software engineer — that's not a useful data point for most readers. The more useful answer: I'd recommend Lovable to a friend who wants a tool to ship a specific, fairly conventional app this month and never think about it again. I'd recommend Claude Code to a friend who wants to <em>become someone who builds things</em>, who has multiple ideas, or who wants to build something that doesn't fit a template.</p>
 <p>For the rest of this guide, I'll assume you've picked Claude Code. If you went with Lovable, much of what follows still applies — prompts, the four-phase loop, specs, redteam — and sections that are Claude-Code-specific are clearly marked. Toggle the switch at the top to hide them.</p>
-<h3>Quick decision aid</h3>
+<h3>In summary: Quick decision aid</h3>
 <table><thead><tr><th>Your situation</th><th>Probably the right tool</th></tr></thead><tbody>
 <tr><td>&quot;I want my idea live this weekend&quot;</td><td>Full-service builder</td></tr>
 <tr><td>&quot;I'm not technical and don't want to be&quot;</td><td>Full-service builder</td></tr>
@@ -520,15 +520,16 @@ html { scroll-behavior: smooth; }
 <div class="section-body">
 <h2 id="section-2-h">Section 2 — The terminal and folders</h2>
 <p class="section-marker section-marker-cc-only">Claude Code only</p>
-<p>Two foundations before anything else, because most people coming to Claude Code are not coming from a developer background.</p>
+<p>Here are two foundations before anything else, because most people coming to Claude Code are not coming from a developer background.</p>
 <p><strong>The terminal</strong> is a window on your computer where you type commands instead of clicking. Programmers use it because typing is faster than clicking once you know what you want. It looks intimidating but it's actually simpler than most apps — no menus, no settings buried in tabs. You type a command, hit enter, something happens.</p>
 <p>On a Mac, the app is called Terminal (open Spotlight with Cmd+Space and type &quot;terminal&quot;). On Windows, it's PowerShell or Command Prompt. On Linux, you already know.</p>
 <p>We'll use the terminal for two things in this guide: starting Claude Code, and watching what Claude does.</p>
 <p><strong>Folders</strong> are everything else. Every program on your computer lives in a folder. Folders contain files and other folders, all the way down. When you open Finder on a Mac or Explorer on Windows, you're looking at folders. The terminal sees the same folders, just with prettier-than-icons output.</p>
 <p>Why this matters for Claude Code: <strong>Claude doesn't know about your whole computer. It only knows about one folder at a time</strong> — the folder you started it in. Files in that folder, Claude can read and edit. Files outside it, Claude can't see. So the very first habit, before anything else: pick the folder for your project, walk into it, then start Claude.</p>
 <p>The command for &quot;walk into a folder&quot; is <code>cd</code> (change directory). Two commands you'll use constantly:</p>
-<pre><code class="language-bash">cd ~/Documents/my-app    # walk into this folder
-pwd                      # show me where I am right now</code></pre>
+<pre><code class="language-bash">cd ~/Documents           # change the current directory to Documents
+pwd                      # show me where I am right now
+ls                       # list all documents in this directory</code></pre>
 <p>That's enough to get going. We'll do this together in section 4.</p>
 </div></section>
 <section class="section" id="section-3" data-section-tag="lovable-handles" aria-labelledby="section-3-h">
@@ -536,17 +537,22 @@ pwd                      # show me where I am right now</code></pre>
 <h2 id="section-3-h">Section 3 — Your project folder, and why git is your safety net</h2>
 <p class="section-marker section-marker-lovable-handles">Lovable handles this automatically</p>
 <p>Before you install Claude Code, decide where your projects will live and set up your safety net.</p>
-<p><strong>Pick a parent folder for all your projects.</strong> I use <code>~/Projects/</code>. Inside it, each project gets its own folder. So Aurea lives at <code>~/Projects/aurea/</code>, Yantra lives at <code>~/Projects/yantra/</code>. Pick a structure you like and stick with it.</p>
+<p><strong>Pick a parent folder for all your software development projects.</strong> I use <code>~/dev/</code>. Inside it, each project gets its own folder. So Aurea lives at <code>~/dev/aurea/</code>, Yantra lives at <code>~/dev/yantra/</code>. Pick a structure you like and stick with it.</p>
 <p>Make your first project folder now:</p>
-<pre><code class="language-bash">mkdir -p ~/Projects/my-first-app
-cd ~/Projects/my-first-app</code></pre>
+<pre><code class="language-bash">mkdir ~/dev              # Make a new parent directory called dev;
+                         # ~/ means a path that starts from your &quot;home directory&quot;
+
+cd ~/dev                 # Change current directory to dev
+mkdir my-first-app       # See if you can tell what these two do!
+                         # no ~/ is required because we're working in dev already
+cd my-first-app          </code></pre>
 <p><strong>Now, git.</strong> Git is a tool that takes snapshots of your project as it grows. Every snapshot is a recovery point. If Claude does something you don't like — deletes a working file, refactors in a way you hate, &quot;improves&quot; something that wasn't broken — you can roll back to a snapshot in one command.</p>
 <p>This isn't optional. <strong>If you're using Claude Code, you're using git.</strong> Not &quot;you should.&quot; You must. Two reasons:</p>
 <ol>
 <li>Claude will eventually do something destructive. Without git, that work is gone. With git, it's <code>git reset --hard</code> and you're back where you were.</li>
 <li>When something works, you want to lock it in. Commit small, commit often. The blast radius of any bad session is bounded by your last commit — keep the radius small.</li>
 </ol>
-<p>Initialize git in your new folder:</p>
+<p>Initialize git while in your new folder (cd there if necessary):</p>
 <pre><code class="language-bash">git init
 git add -A
 git commit -m &quot;baseline before Claude&quot;</code></pre>
@@ -576,7 +582,7 @@ git commit -m &quot;baseline before Claude&quot;</code></pre>
 <p>The native binary is the recommended path on every platform — it auto-updates, so you stay on the latest model and features without thinking about it. Avoid the older npm install if you have a choice.</p>
 <p><strong>Plan tier:</strong> you'll need a Claude subscription. Start on <strong>Pro at $20/month</strong> — it's plenty for learning and for any reasonable side project. When you find yourself hitting your token limit and waiting, that's the upgrade signal. The <strong>Max plan at $100/month</strong> pays for itself in saved hours once you're using Claude Code daily. Don't pre-upgrade; let the workflow tell you when.</p>
 <p>Once installed, walk into your project folder and start Claude:</p>
-<pre><code class="language-bash">cd ~/Projects/my-first-app
+<pre><code class="language-bash">cd ~/dev/my-first-app
 claude</code></pre>
 <p>First time, you'll be prompted to log in. Follow the link, authorize, come back. Now run your very first prompt — just to confirm everything works:</p>
 <pre><code class="language-plain">&gt; what files are in this directory and what does this project do?</code></pre>
@@ -590,7 +596,7 @@ claude</code></pre>
 <div class="section-body">
 <h2 id="section-5-h">Section 5 — Pick what you're building</h2>
 <p class="section-marker section-marker-also-lovable">Also works in Lovable</p>
-<p>The single biggest predictor of whether someone sticks with Claude Code is having a project they actually want to use. Don't pick a tutorial project. Pick something you'd open every day.</p>
+<p>The single biggest predictor of whether someone sticks with Claude Code is building something they actually want to use. For your first project, pick something you'd open every day.</p>
 <p>If you're not sure where to start, here are five categories that work well for first projects. Each comes with a starter prompt you can adapt — the bracketed parts are yours to fill in. Each prompt asks Claude to propose a plan <em>before</em> writing code, so read the plan in chat and push back before you say go. (You'll meet plan mode proper in section 6.)</p>
 <p><strong>Personal tracker.</strong> Habits, journaling, mood, meditation streaks. Single user, simple data, immediate daily value.</p>
 <pre><code class="language-plain">&gt; I want to build a personal [tracker type] web app. Single page,
