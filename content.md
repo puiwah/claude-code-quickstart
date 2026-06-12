@@ -143,9 +143,12 @@ Before you install Claude Code, decide where your projects will live and set up 
 Make your first project folder now:
 
 ```bash
-mkdir ~/dev              # Make a new parent directory called dev; ~/ means a path that starts from your "home directory"
+mkdir ~/dev              # Make a new parent directory called dev;
+                         # ~/ means a path that starts from your "home directory"
+
 cd ~/dev                 # Change current directory to dev
-mkdir my-first-app       # See if you can tell what these two do; no ~ required because we're working in dev now
+mkdir my-first-app       # See if you can tell what these two do!
+                         # no ~/ is required because we're working in dev already
 cd my-first-app          
 ```
 
